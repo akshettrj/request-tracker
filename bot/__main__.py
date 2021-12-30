@@ -89,7 +89,7 @@ async def request_handler(client: Client, message: Message):
                     chat_id=GROUP_ID,
                     text=f'{user.mention(user.first_name)}, your '+\
                             f'{html_message_link(group_id, last_eng_req_id, "last request")} '+\
-                            'was less than 7 days ago and hence is deleted.'
+                            'was less than 7 days ago and hence your new request is deleted.'
                 )
         elif last_eng_fulfill is not None and last_eng_req is None:
             time_diff = cur_time.date() - last_eng_fulfill.date()
@@ -99,7 +99,7 @@ async def request_handler(client: Client, message: Message):
                     chat_id=GROUP_ID,
                     text=f'{user.mention(user.first_name)}, your last request was '+\
                             f'{html_message_link(group_id, last_eng_fulfill_id, "fulfilled")} '+\
-                            'was less than 7 days ago and hence is deleted.'
+                            'was less than 7 days ago and hence your new request is deleted.'
                 )
         elif last_eng_fulfill is not None and last_eng_req is not None:
             if last_eng_req > last_eng_fulfill:
@@ -110,7 +110,7 @@ async def request_handler(client: Client, message: Message):
                         chat_id=GROUP_ID,
                         text=f'{user.mention(user.first_name)}, your ' +\
                                 f'{html_message_link(group_id, last_eng_req_id, "last request")} ' +\
-                                'was less than 7 days ago and hence is deleted.'
+                                'was less than 7 days ago and hence your new request is deleted.'
                     )
             else:
                 time_diff = cur_time.date() - last_eng_fulfill.date()
@@ -120,7 +120,7 @@ async def request_handler(client: Client, message: Message):
                         chat_id=GROUP_ID,
                         text=f'{user.mention(user.first_name)}, your last request was '+\
                                 f'{html_message_link(group_id, last_eng_fulfill_id, "fulfilled")} '+\
-                                'was less than 7 days ago and hence is deleted.'
+                                'was less than 7 days ago and hence your new request is deleted.'
                     )
 
     else:
@@ -134,7 +134,7 @@ async def request_handler(client: Client, message: Message):
                     chat_id=GROUP_ID,
                     text=f'{user.mention(user.first_name)}, your '+\
                             f'{html_message_link(group_id, last_non_eng_req_id, "last non-english request")} '+\
-                            'was less than 14 days ago and hence is deleted.'
+                            'was less than 14 days ago and hence your new request is deleted.'
                 )
         elif last_non_eng_fulfill is not None and last_non_eng_req is None:
             time_diff = cur_time.date() - last_non_eng_fulfill.date()
@@ -144,7 +144,7 @@ async def request_handler(client: Client, message: Message):
                     chat_id=GROUP_ID,
                     text=f'{user.mention(user.first_name)}, your last non-english request was '+\
                             f'{html_message_link(group_id, last_non_eng_fulfill_id, "fulfilled")} '+\
-                            'was less than 14 days ago and hence is deleted.'
+                            'was less than 14 days ago and hence your new request is deleted.'
                 )
         elif last_non_eng_fulfill is not None and last_non_eng_req is not None:
             if last_non_eng_req > last_non_eng_fulfill:
@@ -155,7 +155,7 @@ async def request_handler(client: Client, message: Message):
                         chat_id=GROUP_ID,
                         text=f'{user.mention(user.first_name)}, your ' +\
                                 f'{html_message_link(group_id, last_non_eng_req_id, "last non-english request")} ' +\
-                                'was less than 14 days ago and hence is deleted.'
+                                'was less than 14 days ago and hence your new request is deleted.'
                     )
             else:
                 time_diff = cur_time.date() - last_non_eng_fulfill.date()
@@ -165,7 +165,7 @@ async def request_handler(client: Client, message: Message):
                         chat_id=GROUP_ID,
                         text=f'{user.mention(user.first_name)}, your last non-english request was '+\
                                 f'{html_message_link(group_id, last_non_eng_fulfill_id, "fulfilled")} '+\
-                                'was less than 7 days ago and hence is deleted.'
+                                'was less than 7 days ago and hence your new request is deleted.'
                     )
 
 
