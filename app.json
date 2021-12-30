@@ -2,12 +2,9 @@
     "name": "Eolian Request Tracker",
     "description": "A bot to track the audiobook requests of people",
     "keywords": [
-        "telegram",
-        "bot",
-        "postgresql"
+        "telegram"
     ],
     "repository": "https://github.com/Propheci/ruko-zara-sabar-karo",
-    "success_url": "https://github.com/Propheci/ruko-zara-sabar-karo",
     "env": {
         "API_ID": {
             "description": "Get it from my.telegram.org",
