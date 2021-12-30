@@ -1,7 +1,7 @@
 from datetime import datetime
 from pyrogram.types.user_and_chats.chat_member import ChatMember
 from bot import ( BOT_TOKEN, FULFILL_FILTER, REQUEST_FILTER,
-        GROUP_ID, API_HASH, API_ID, DATABASE_URL, COMMAND_FILTER )
+        GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER, STATS_COMMAND_FILTER )
 
 from pyrogram import Client
 from pyrogram.types import Message
@@ -169,8 +169,9 @@ async def request_handler(client: Client, message: Message):
                     )
 
 
-@app.on_message(filters=COMMAND_FILTER, group=2)
+@app.on_message(filters=STATS_COMMAND_FILTER, group=2)
 async def get_user_data(client: Client, message: Message):
+
     user = message.from_user
     if user is None:
         return
@@ -248,5 +249,21 @@ async def get_user_data(client: Client, message: Message):
                 text=stats_message,
                 quote=True
             )
+
+@app.on_message(filters=START_COMMAND_FILTER, group=3)
+async def start_command(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+    if membership.status not in ['administrator', 'creator']:
+        return
+
+    await message.reply_text(
+        text="Hi I am up and tracking the requests 😎",
+        quote=True
+    )
 
 app.run()

@@ -1,0 +1,60 @@
+{
+    "name": "Eolian Request Tracker",
+    "description": "A bot to track the audiobook requests of people",
+    "keywords": [
+        "telegram",
+        "bot",
+        "postgresql"
+    ],
+    "repository": "https://github.com/Propheci/ruko-zara-sabar-karo",
+    "success_url": "https://github.com/Propheci/ruko-zara-sabar-karo",
+    "env": {
+        "API_ID": {
+            "description": "Get it from my.telegram.org",
+            "value": "",
+            "required": true
+        },
+        "API_HASH": {
+            "description": "Get it from my.telegram.org",
+            "value": "",
+            "required": true
+        },
+        "BOT_TOKEN": {
+            "description": "Get it from BotFather",
+            "value": "",
+            "required": true
+        },
+        "GROUP_ID": {
+            "description": "The ID of the group in which requests will be tracked",
+            "value": "-100",
+            "required": true
+        },
+        "ENG_REQ_TIME": {
+            "description": "The time to wait for eng req. Examples: 7d -> 7 days, 7min -> 7 minutes, 7s -> 7 seconds",
+            "value": "7d",
+            "required": true
+        },
+        "NON_ENG_REQ_TIME": {
+            "description": "The time to wait for non-eng req. Examples: 7d -> 7 days, 7min -> 7 minutes, 7s -> 7 seconds",
+            "value": "14d",
+            "required": true
+        },
+    },
+    "buildpacks": [
+        {
+            "url": "heroku/python"
+        }
+    ],
+    "addons": [
+        {
+            "plan": "heroku-postgresql"
+        }
+    ],
+    "formation": {
+        "worker": {
+            "quantity": 1,
+            "size": "free"
+        }
+    },
+    "stack": "heroku-20"
+}

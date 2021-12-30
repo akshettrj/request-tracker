@@ -38,10 +38,16 @@ REQUEST_FILTER = (
             filters.text
         )
 
-COMMAND_FILTER = (
+STATS_COMMAND_FILTER = (
             filters.chat(GROUP_ID) &
             filters.text &
             filters.command('stats')
+        )
+
+START_COMMAND_FILTER = (
+            filters.chat(GROUP_ID) &
+            filters.text &
+            filters.command('start')
         )
 
 DATABASE_URL = os.environ.get('DATABASE_URL', '')

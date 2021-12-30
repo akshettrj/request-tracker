@@ -4,7 +4,24 @@ from datetime import datetime
 class Database:
 
     def __init__(self, database_url: str):
+
         self.connection = psycopg2.connect(database_url)
+        cur = self.connection.cursor()
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS users (" +
+                "user_id                   BIGINT       PRIMARY KEY," +
+                "last_eng_req              TIMESTAMP    DEFAULT NULL," +
+                "last_eng_req_id           BIGINT       DEFAULT NULL," +
+                "last_eng_fulfill          TIMESTAMP    DEFAULT NULL," +
+                "last_eng_fulfill_id       BIGINT       DEFAULT NULL," +
+                "last_non_eng_req          TIMESTAMP    DEFAULT NULL," +
+                "last_non_eng_req_id       BIGINT       DEFAULT NULL," +
+                "last_non_eng_fulfill      TIMESTAMP    DEFAULT NULL," +
+                "last_non_eng_fulfill_id   BIGINT       DEFAULT NULL" +
+            ");"
+        )
+        self.connection.commit()
+        cur.close()
 
     def __del__(self):
         self.connection.close()
