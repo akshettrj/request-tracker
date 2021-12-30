@@ -80,3 +80,19 @@ def get_message_media(message: Message):
         return doc
 
     return None
+
+def time_gap_not_crossed(curr_time: datetime, old_time: datetime, gap):
+
+    print(gap['value'])
+    if gap['type'] == 'd':
+        time_diff = curr_time.date() - old_time.date()
+        return time_diff.days < gap['value']
+
+    elif gap['type'] == 'min':
+        time_diff = curr_time - old_time
+        mins = time_diff.seconds // 60
+        return mins < gap['value']
+
+    elif gap['type'] == 's':
+        time_diff = curr_time - old_time
+        return time_diff.seconds < gap['value']

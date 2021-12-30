@@ -1,11 +1,12 @@
 from datetime import datetime
 from pyrogram.types.user_and_chats.chat_member import ChatMember
-from bot import ( BOT_TOKEN, FULFILL_FILTER, REQUEST_FILTER,
+from bot import ( BOT_TOKEN, FULFILL_FILTER, LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
         GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER, STATS_COMMAND_FILTER )
 
 from pyrogram import Client
 from pyrogram.types import Message
-from bot.helpers.utils import format_time_diff, get_message_media, is_a_request, is_english_request, html_message_link
+from bot.helpers.utils import ( format_time_diff, get_message_media, is_a_request,
+        is_english_request, html_message_link, time_gap_not_crossed )
 
 from bot.helpers.database import Database
 
@@ -82,91 +83,95 @@ async def request_handler(client: Client, message: Message):
         if last_eng_req is None and last_eng_fulfill is None:
             return
         elif last_eng_req is not None and last_eng_fulfill is None:
-            time_diff = cur_time.date() - last_eng_req.date()
-            if time_diff.days < 7:
+            if time_gap_not_crossed(cur_time, last_eng_req, REQ_TIMES['eng']):
                 await message.delete()
                 await client.send_message(
                     chat_id=GROUP_ID,
                     text=f'{user.mention(user.first_name)}, your '+\
                             f'{html_message_link(group_id, last_eng_req_id, "last request")} '+\
-                            'was less than 7 days ago and hence your new request is deleted.'
+                            f'was less than {REQ_TIMES["eng"]["full"]} ago and hence your new request is deleted.'
                 )
+                return
         elif last_eng_fulfill is not None and last_eng_req is None:
-            time_diff = cur_time.date() - last_eng_fulfill.date()
-            if time_diff.days < 7:
+            if time_gap_not_crossed(cur_time, last_eng_fulfill, REQ_TIMES['eng']):
                 await message.delete()
                 await client.send_message(
                     chat_id=GROUP_ID,
                     text=f'{user.mention(user.first_name)}, your last request was '+\
                             f'{html_message_link(group_id, last_eng_fulfill_id, "fulfilled")} '+\
-                            'was less than 7 days ago and hence your new request is deleted.'
+                            'was less than {REQ_TIMES["eng"]["full"]} ago and hence your new request is deleted.'
                 )
+                return
         elif last_eng_fulfill is not None and last_eng_req is not None:
             if last_eng_req > last_eng_fulfill:
-                time_diff = cur_time.date() - last_eng_req.date()
-                if time_diff.days < 7:
+                if time_gap_not_crossed(cur_time, last_eng_req, REQ_TIMES['eng']):
                     await message.delete()
                     await client.send_message(
                         chat_id=GROUP_ID,
                         text=f'{user.mention(user.first_name)}, your ' +\
                                 f'{html_message_link(group_id, last_eng_req_id, "last request")} ' +\
-                                'was less than 7 days ago and hence your new request is deleted.'
+                                f'was less than {REQ_TIMES["eng"]["full"]} ago and hence your new request is deleted.'
                     )
+                    return
             else:
-                time_diff = cur_time.date() - last_eng_fulfill.date()
-                if time_diff.days < 7:
+                if time_gap_not_crossed(cur_time, last_eng_fulfill, REQ_TIMES['eng']):
                     await message.delete()
                     await client.send_message(
                         chat_id=GROUP_ID,
                         text=f'{user.mention(user.first_name)}, your last request was '+\
                                 f'{html_message_link(group_id, last_eng_fulfill_id, "fulfilled")} '+\
-                                'was less than 7 days ago and hence your new request is deleted.'
+                                f'was less than {REQ_TIMES["eng"]["full"]} ago and hence your new request is deleted.'
                     )
+                    return
+
+        db.register_request(user.id, is_english, message.message_id)
 
     else:
         if last_non_eng_req is None and last_non_eng_fulfill is None:
             return
         elif last_non_eng_req is not None and last_non_eng_fulfill is None:
-            time_diff = cur_time.date() - last_non_eng_req.date()
-            if time_diff.days < 14:
+            if time_gap_not_crossed(cur_time, last_non_eng_req, REQ_TIMES['non_eng']):
                 await message.delete()
                 await client.send_message(
                     chat_id=GROUP_ID,
                     text=f'{user.mention(user.first_name)}, your '+\
                             f'{html_message_link(group_id, last_non_eng_req_id, "last non-english request")} '+\
-                            'was less than 14 days ago and hence your new request is deleted.'
+                            f'was less than {REQ_TIMES["non_eng"]["full"]} ago and hence your new request is deleted.'
                 )
+                return
         elif last_non_eng_fulfill is not None and last_non_eng_req is None:
-            time_diff = cur_time.date() - last_non_eng_fulfill.date()
-            if time_diff.days < 14:
+            if time_gap_not_crossed(cur_time, last_non_eng_fulfill, REQ_TIMES['non_eng']):
                 await message.delete()
                 await client.send_message(
                     chat_id=GROUP_ID,
                     text=f'{user.mention(user.first_name)}, your last non-english request was '+\
                             f'{html_message_link(group_id, last_non_eng_fulfill_id, "fulfilled")} '+\
-                            'was less than 14 days ago and hence your new request is deleted.'
+                            f'was less than {REQ_TIMES["non_eng"]["full"]} ago and hence your new request is deleted.'
                 )
+                return
         elif last_non_eng_fulfill is not None and last_non_eng_req is not None:
             if last_non_eng_req > last_non_eng_fulfill:
-                time_diff = cur_time.date() - last_non_eng_req.date()
-                if time_diff.days < 14:
+                if time_gap_not_crossed(cur_time, last_non_eng_req, REQ_TIMES['non_eng']):
                     await message.delete()
                     await client.send_message(
                         chat_id=GROUP_ID,
                         text=f'{user.mention(user.first_name)}, your ' +\
                                 f'{html_message_link(group_id, last_non_eng_req_id, "last non-english request")} ' +\
-                                'was less than 14 days ago and hence your new request is deleted.'
+                                f'was less than {REQ_TIMES["non_eng"]["full"]} ago and hence your new request is deleted.'
                     )
+                    return
             else:
-                time_diff = cur_time.date() - last_non_eng_fulfill.date()
-                if time_diff.days < 14:
+                if time_gap_not_crossed(cur_time, last_non_eng_fulfill, REQ_TIMES['non_eng']):
                     await message.delete()
                     await client.send_message(
                         chat_id=GROUP_ID,
                         text=f'{user.mention(user.first_name)}, your last non-english request was '+\
                                 f'{html_message_link(group_id, last_non_eng_fulfill_id, "fulfilled")} '+\
-                                'was less than 7 days ago and hence your new request is deleted.'
+                                f'was less than {REQ_TIMES["non_eng"]["full"]} ago and hence your new request is deleted.'
                     )
+                    return
+
+        db.register_request(user.id, is_english, message.message_id)
 
 
 @app.on_message(filters=STATS_COMMAND_FILTER, group=2)
@@ -263,6 +268,18 @@ async def start_command(client: Client, message: Message):
 
     await message.reply_text(
         text="Hi I am up and tracking the requests 😎",
+        quote=True
+    )
+
+@app.on_message(filters=LIMITS_COMMAND_FILTER, group=4)
+async def limits_command(client: Client, message: Message):
+
+    limits_message = f'<b>These are the current limits</b>:\n\n' + \
+                    f'<u>Eng. Requests</u>: {REQ_TIMES["eng"]["value"]}{REQ_TIMES["eng"]["type"]}\n' + \
+                    f'<u>Non-Eng. Requests</u>: {REQ_TIMES["non_eng"]["value"]}{REQ_TIMES["non_eng"]["type"]}'
+
+    await message.reply_text(
+        text=limits_message,
         quote=True
     )
 
