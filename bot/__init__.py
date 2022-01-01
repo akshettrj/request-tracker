@@ -109,10 +109,16 @@ REQUEST_FILTER = (
             filters.text
         )
 
-STATS_COMMAND_FILTER = (
+REQUESTS_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
             filters.text &
-            filters.command('stats')
+            filters.command('requests')
+        )
+
+CLEAR_LAST_REQUEST_COMMAND_FILTER = (
+            (_COMMAND_CHATS_FILTER) &
+            filters.text &
+            filters.command('dellastreq')
         )
 
 START_COMMAND_FILTER = (
@@ -125,6 +131,12 @@ LIMITS_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
             filters.text &
             filters.command('limits')
+        )
+
+DROP_DB_COMMAND_FILTER = (
+            (_COMMAND_CHATS_FILTER) &
+            filters.text &
+            filters.command('dropdb')
         )
 
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''

@@ -1,7 +1,8 @@
 from datetime import datetime
 from pyrogram.types.user_and_chats.chat_member import ChatMember
-from bot import ( BOT_TOKEN, FULFILL_FILTER, LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
-        GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER, STATS_COMMAND_FILTER )
+from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER,
+        LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
+        GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER, REQUESTS_COMMAND_FILTER )
 
 from pyrogram import Client
 from pyrogram.types import Message
@@ -21,6 +22,7 @@ app = Client(
 
 @app.on_message(filters=FULFILL_FILTER, group=0)
 async def request_fulfill_handler(client: Client, message: Message):
+
     user = message.from_user
     if user is None:
         return
@@ -44,13 +46,19 @@ async def request_fulfill_handler(client: Client, message: Message):
 
     user_id = replied_to.from_user.id
     user_data = db.get_user(user_id)
-    if user_data[0] is None:
+
+    if user_data is None:
         db.add_user(user_id)
 
-    db.register_request_fulfillment(user_id, is_english, message.message_id)
+    if db.get_request(user_id, replied_to.message_id)[0] is None:
+        db.register_request(user_id, is_english, replied_to.message_id)
 
-@app.on_message(filters=REQUEST_FILTER, group=1)
+    db.register_request_fulfillment(user_id, replied_to.message_id, message.message_id)
+
+
+@app.on_message(filters=REQUEST_FILTER, group=2)
 async def request_handler(client: Client, message: Message):
+
     user = message.from_user
     if user is None:
         return
@@ -67,10 +75,7 @@ async def request_handler(client: Client, message: Message):
 
     is_english = is_english_request(message)
 
-    ( user_id, last_eng_req, last_eng_req_id, last_eng_fulfill,
-        last_eng_fulfill_id, last_non_eng_req,
-        last_non_eng_req_id, last_non_eng_fulfill,
-        last_non_eng_fulfill_id ) = db.get_user(user.id)
+    user_id = db.get_user(user.id)
 
     if user_id is None:
         db.add_user(user.id)
@@ -79,111 +84,57 @@ async def request_handler(client: Client, message: Message):
 
     cur_time = datetime.now()
     group_id = int(str(GROUP_ID)[4:])
-    if is_english:
-        if last_eng_req is None and last_eng_fulfill is None:
-            return
-        elif last_eng_req is not None and last_eng_fulfill is None:
-            if time_gap_not_crossed(cur_time, last_eng_req, REQ_TIMES['eng']):
-                await message.delete()
-                await client.send_message(
-                    chat_id=GROUP_ID,
-                    text=f'{user.mention(user.first_name)}, your '+\
-                            f'{html_message_link(group_id, last_eng_req_id, "last request")} '+\
-                            f'was less than {REQ_TIMES["eng"]["full"]} ago and hence your new request is deleted.'
-                )
-                return
-        elif last_eng_fulfill is not None and last_eng_req is None:
-            if time_gap_not_crossed(cur_time, last_eng_fulfill, REQ_TIMES['eng']):
-                await message.delete()
-                await client.send_message(
-                    chat_id=GROUP_ID,
-                    text=f'{user.mention(user.first_name)}, your last request was '+\
-                            f'{html_message_link(group_id, last_eng_fulfill_id, "fulfilled")} '+\
-                            'was less than {REQ_TIMES["eng"]["full"]} ago and hence your new request is deleted.'
-                )
-                return
-        elif last_eng_fulfill is not None and last_eng_req is not None:
-            if last_eng_req > last_eng_fulfill:
-                if time_gap_not_crossed(cur_time, last_eng_req, REQ_TIMES['eng']):
-                    await message.delete()
-                    await client.send_message(
-                        chat_id=GROUP_ID,
-                        text=f'{user.mention(user.first_name)}, your ' +\
-                                f'{html_message_link(group_id, last_eng_req_id, "last request")} ' +\
-                                f'was less than {REQ_TIMES["eng"]["full"]} ago and hence your new request is deleted.'
-                    )
-                    return
-            else:
-                if time_gap_not_crossed(cur_time, last_eng_fulfill, REQ_TIMES['eng']):
-                    await message.delete()
-                    await client.send_message(
-                        chat_id=GROUP_ID,
-                        text=f'{user.mention(user.first_name)}, your last request was '+\
-                                f'{html_message_link(group_id, last_eng_fulfill_id, "fulfilled")} '+\
-                                f'was less than {REQ_TIMES["eng"]["full"]} ago and hence your new request is deleted.'
-                    )
-                    return
 
+    user_requests = db.get_user_requests(user.id)
+
+    if len(user_requests) == 0:
         db.register_request(user.id, is_english, message.message_id)
+        return
+
+    def get_req_time(req):
+        return req['req_time']
+
+    req_by_req_time = sorted(user_requests, key=get_req_time)
+
+    last_req = req_by_req_time[-1]
+    req_time = REQ_TIMES['eng'] if last_req['is_english'] else REQ_TIMES['non_eng']
+    last_req_str = 'last English request' if last_req['is_english'] else 'last Non-English request'
+
+    if last_req['fulfill_message_id'] is None:
+        if time_gap_not_crossed(cur_time, last_req['req_time'], req_time):
+            await message.delete()
+            await client.send_message(
+                chat_id=GROUP_ID,
+                text=f"{user.mention(user.first_name)}, your " +\
+                        f"{html_message_link(group_id, last_req['message_id'], last_req_str)} " +\
+                        f"was less than {req_time['full']} ago and hence is deleted."
+            )
+            return
 
     else:
-        if last_non_eng_req is None and last_non_eng_fulfill is None:
+        if time_gap_not_crossed(cur_time, last_req['fulfill_time'], req_time):
+            await message.delete()
+            await client.send_message(
+                chat_id=GROUP_ID,
+                text=f"{user.mention(user.first_name)}, your {last_req_str} " +\
+                        f"{html_message_link(group_id, last_req['fulfill_message_id'], 'was fulfilled')} " +\
+                        f"less than {req_time['full']} ago and hence is deleted."
+            )
             return
-        elif last_non_eng_req is not None and last_non_eng_fulfill is None:
-            if time_gap_not_crossed(cur_time, last_non_eng_req, REQ_TIMES['non_eng']):
-                await message.delete()
-                await client.send_message(
-                    chat_id=GROUP_ID,
-                    text=f'{user.mention(user.first_name)}, your '+\
-                            f'{html_message_link(group_id, last_non_eng_req_id, "last non-english request")} '+\
-                            f'was less than {REQ_TIMES["non_eng"]["full"]} ago and hence your new request is deleted.'
-                )
-                return
-        elif last_non_eng_fulfill is not None and last_non_eng_req is None:
-            if time_gap_not_crossed(cur_time, last_non_eng_fulfill, REQ_TIMES['non_eng']):
-                await message.delete()
-                await client.send_message(
-                    chat_id=GROUP_ID,
-                    text=f'{user.mention(user.first_name)}, your last non-english request was '+\
-                            f'{html_message_link(group_id, last_non_eng_fulfill_id, "fulfilled")} '+\
-                            f'was less than {REQ_TIMES["non_eng"]["full"]} ago and hence your new request is deleted.'
-                )
-                return
-        elif last_non_eng_fulfill is not None and last_non_eng_req is not None:
-            if last_non_eng_req > last_non_eng_fulfill:
-                if time_gap_not_crossed(cur_time, last_non_eng_req, REQ_TIMES['non_eng']):
-                    await message.delete()
-                    await client.send_message(
-                        chat_id=GROUP_ID,
-                        text=f'{user.mention(user.first_name)}, your ' +\
-                                f'{html_message_link(group_id, last_non_eng_req_id, "last non-english request")} ' +\
-                                f'was less than {REQ_TIMES["non_eng"]["full"]} ago and hence your new request is deleted.'
-                    )
-                    return
-            else:
-                if time_gap_not_crossed(cur_time, last_non_eng_fulfill, REQ_TIMES['non_eng']):
-                    await message.delete()
-                    await client.send_message(
-                        chat_id=GROUP_ID,
-                        text=f'{user.mention(user.first_name)}, your last non-english request was '+\
-                                f'{html_message_link(group_id, last_non_eng_fulfill_id, "fulfilled")} '+\
-                                f'was less than {REQ_TIMES["non_eng"]["full"]} ago and hence your new request is deleted.'
-                    )
-                    return
 
-        db.register_request(user.id, is_english, message.message_id)
+    db.register_request(user.id, is_english, message.message_id)
 
-
-@app.on_message(filters=STATS_COMMAND_FILTER, group=2)
+@app.on_message(filters=REQUESTS_COMMAND_FILTER, group=3)
 async def get_user_data(client: Client, message: Message):
 
     user = message.from_user
     if user is None:
         return
 
-    membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
-    if membership.status not in ['administrator', 'creator']:
-        return
+    if message.chat.id == GROUP_ID:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
 
     body = message.text
     if body is None:
@@ -203,8 +154,8 @@ async def get_user_data(client: Client, message: Message):
         if replied_to is None:
             await message.reply_text(
                 text='<b>Usages:</b>\n' +
-                '1. <code>/stats <user_id></code>\n' +
-                '2. Reply <code>/stats</code> to a user\'s message',
+                '1. <code>/requests <user_id></code>\n' +
+                '2. Reply <code>/requests</code> to a user\'s message',
                 quote=True
             )
             return
@@ -212,10 +163,7 @@ async def get_user_data(client: Client, message: Message):
             target_user_id = replied_to.from_user.id
 
 
-    ( user_id, last_eng_req, last_eng_req_id, last_eng_fulfill,
-        last_eng_fulfill_id, last_non_eng_req,
-        last_non_eng_req_id, last_non_eng_fulfill,
-        last_non_eng_fulfill_id ) = db.get_user(target_user_id)
+    user_id = db.get_user(target_user_id)
 
     if user_id is None:
         await message.reply_text(
@@ -224,55 +172,58 @@ async def get_user_data(client: Client, message: Message):
         )
         return
 
-    curr_time = datetime.now()
-    group_id = int(str(GROUP_ID)[4:])
+    user_requests = db.get_user_requests(target_user_id)
+    stats_text = f'There are currently {len(user_requests)} requests registered in database for this user.'
 
-    p_last_eng_req = "Not found"
-    p_last_eng_fulfill = "Not found"
-    p_last_non_eng_req = "Not found"
-    p_last_non_eng_fulfill = "Not found"
+    if len(user_requests) > 0:
 
-    if last_eng_req is not None and last_eng_req_id is not None:
-        p_last_eng_req = f"<code>{format_time_diff(curr_time, last_eng_req)}</code> → {html_message_link(group_id, last_eng_req_id, 'link')}"
+        cur_time = datetime.now()
+        group_id = int(str(GROUP_ID)[4:])
+        def get_req_time(req):
+            return req['req_time']
 
-    if last_eng_fulfill is not None and last_eng_fulfill_id is not None:
-        p_last_eng_fulfill = f"<code>{format_time_diff(curr_time, last_eng_fulfill)}</code> → {html_message_link(group_id, last_eng_fulfill_id, 'link')}"
+        req_by_req_time = sorted(user_requests, key=get_req_time)
+        last_req = req_by_req_time[-1]
 
-    if last_non_eng_req is not None and last_non_eng_req_id is not None:
-        p_last_non_eng_req = f"<code>{format_time_diff(curr_time, last_non_eng_req)}</code> → {html_message_link(group_id, last_non_eng_req_id, 'link')}"
+        stats_text += f'\n\nThe {html_message_link(group_id, last_req["message_id"], "last one")} was {format_time_diff(cur_time, last_req["req_time"])} ago'
 
-    if last_non_eng_fulfill is not None and last_non_eng_fulfill_id is not None:
-        p_last_non_eng_fulfill = f"<code>{format_time_diff(curr_time, last_non_eng_fulfill)}</code> → {html_message_link(group_id, last_non_eng_fulfill_id, 'link')}"
-
-    stats_message = f"<b>Stats for</b> <code>{user_id}</code>:\n\n" + \
-                    f"<u>Eng Request</u>: {p_last_eng_req}\n" + \
-                    f"<u>Eng Fulfilled</u>: {p_last_eng_fulfill}\n" + \
-                    f"<u>Non-Eng Request</u>: {p_last_non_eng_req}\n" + \
-                    f"<u>Non-Eng Fulfilled</u>: {p_last_non_eng_fulfill}\n"
+        if last_req['fulfill_time'] is not None:
+            stats_text += f' and it was {html_message_link(group_id, last_req["fulfill_message_id"], "fulfilled")} {format_time_diff(cur_time, last_req["fulfill_time"])} ago'
 
     await message.reply_text(
-                text=stats_message,
+                text=stats_text,
                 quote=True
             )
 
-@app.on_message(filters=START_COMMAND_FILTER, group=3)
+
+@app.on_message(filters=START_COMMAND_FILTER, group=4)
 async def start_command(client: Client, message: Message):
 
     user = message.from_user
     if user is None:
         return
 
-    membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
-    if membership.status not in ['administrator', 'creator']:
-        return
+    if message.chat.id == GROUP_ID:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
 
     await message.reply_text(
         text="Hi I am up and tracking the requests 😎",
         quote=True
     )
 
-@app.on_message(filters=LIMITS_COMMAND_FILTER, group=4)
+@app.on_message(filters=LIMITS_COMMAND_FILTER, group=5)
 async def limits_command(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    if message.chat.id == GROUP_ID:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
 
     limits_message = f'<b>These are the current limits</b>:\n\n' + \
                     f'<u>Eng. Requests</u>: {REQ_TIMES["eng"]["value"]}{REQ_TIMES["eng"]["type"]}\n' + \
@@ -282,5 +233,113 @@ async def limits_command(client: Client, message: Message):
         text=limits_message,
         quote=True
     )
+
+@app.on_message(filters=DROP_DB_COMMAND_FILTER, group=6)
+async def drop_db_command(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    if message.chat.id == GROUP_ID:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
+
+    db.drop_database()
+    db.create_schema()
+
+    await message.reply_text(
+        text="Successfully dropped database",
+        quote=True
+    )
+
+
+@app.on_message(filters=CLEAR_LAST_REQUEST_COMMAND_FILTER, group=7)
+async def del_last_req_command(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    if message.chat.id == GROUP_ID:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
+
+    body = message.text
+    if body is None:
+        return
+
+    target_user_id = -1
+
+    body_split = body.split("\n")[0].split()
+
+    if len(body_split) >= 2:
+        arg = body_split[1]
+        if arg.isnumeric():
+            target_user_id = int(arg)
+
+    replied_to = message.reply_to_message
+    if target_user_id == -1:
+        if replied_to is None:
+            await message.reply_text(
+                text='<b>Usages:</b>\n' +
+                '1. <code>/dellastreq <user_id></code>\n' +
+                '2. Reply <code>/dellastreq</code> to a user\'s message',
+                quote=True
+            )
+            return
+        else:
+            target_user_id = replied_to.from_user.id
+
+    target_user = None
+    try:
+        target_user = await client.get_chat_member(GROUP_ID, target_user_id)
+    except Exception as _:
+    # if target_user is None:
+        await message.reply_text(
+            text="Not a valid id",
+            quote=True
+        )
+        return
+
+    target_user = target_user.user
+
+    user_id = db.get_user(target_user_id)
+
+    if user_id is None:
+        await message.reply_text(
+            text='There are no records for the user yet.',
+            quote=True
+        )
+        return
+
+    user_requests = db.get_user_requests(target_user_id)
+
+    if len(user_requests) == 0:
+        await message.reply_text(
+            text='There are no records for the user yet.',
+            quote=True
+        )
+        return
+
+    cur_time = datetime.now()
+    group_id = int(str(GROUP_ID)[4:])
+    def get_req_time(req):
+        return req['req_time']
+
+    req_by_req_time = sorted(user_requests, key=get_req_time)
+    last_req = req_by_req_time[-1]
+
+    db.delete_request(target_user_id, last_req['message_id'])
+
+    await message.reply_text(
+                text=f'{html_message_link(group_id, last_req["message_id"], "Last request")} of ' +
+                    f'{target_user.mention(target_user.first_name)} from ' +
+                    f'{format_time_diff(cur_time, last_req["req_time"])} ago has been deleted',
+                quote=True
+            )
+
 
 app.run()

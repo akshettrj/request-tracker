@@ -10,10 +10,11 @@ def is_a_request(message: Message) -> bool:
     body: Str = message.text
     body_lines = body.split('\n')
 
-    first_line_words = body_lines[0].split(' ')
+    first_line_words = body_lines[0].split()
 
     if "#request" in first_line_words and "#audiobook" in first_line_words:
         return True
+
     return False
 
 
@@ -25,7 +26,7 @@ def is_english_request(message: Message):
     body: Str = message.text
     body_lines = body.split('\n')
 
-    first_line_words = body_lines[0].split(' ')
+    first_line_words = body_lines[0].split()
 
     if (
         len(first_line_words) == 2 and
