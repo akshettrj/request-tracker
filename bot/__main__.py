@@ -1,8 +1,9 @@
 from datetime import datetime
 from pyrogram.types.user_and_chats.chat_member import ChatMember
-from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER,
+from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, HELP_COMMAND_FILTER,
         LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
-        GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER, REQUESTS_COMMAND_FILTER )
+        GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER,
+        REQUESTS_COMMAND_FILTER, STATS_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER )
 
 from pyrogram import Client
 from pyrogram.types import Message
@@ -173,7 +174,7 @@ async def get_user_data(client: Client, message: Message):
         return
 
     user_requests = db.get_user_requests(target_user_id)
-    stats_text = f'There are currently {len(user_requests)} requests registered in database for this user.'
+    stats_text = f'There are currently {len(user_requests)} requests registered in database for this user.\n'
 
     if len(user_requests) > 0:
 
@@ -182,10 +183,18 @@ async def get_user_data(client: Client, message: Message):
         def get_req_time(req):
             return req['req_time']
 
+        english_requests = [req for req in user_requests if req['is_english']]
+        english_requests_fulfilled = [req for req in english_requests if req['fulfill_time'] is not None]
+        non_english_requests = [req for req in user_requests if not req['is_english']]
+        non_english_requests_fulfilled = [req for req in non_english_requests if req['fulfill_time'] is not None]
+
+        stats_text += f"\n<u>Eng. Req. Fulfilled</u>: {len(english_requests_fulfilled)} out of {len(english_requests)}\n"
+        stats_text += f"<u>Non-Eng. Req. Fulfilled</u>: {len(non_english_requests_fulfilled)} out of {len(non_english_requests)}\n"
+
         req_by_req_time = sorted(user_requests, key=get_req_time)
         last_req = req_by_req_time[-1]
 
-        stats_text += f'\n\nThe {html_message_link(group_id, last_req["message_id"], "last one")} was {format_time_diff(cur_time, last_req["req_time"])} ago'
+        stats_text += f'\nThe {html_message_link(group_id, last_req["message_id"], "last one")} was {format_time_diff(cur_time, last_req["req_time"])} ago'
 
         if last_req['fulfill_time'] is not None:
             stats_text += f' and it was {html_message_link(group_id, last_req["fulfill_message_id"], "fulfilled")} {format_time_diff(cur_time, last_req["fulfill_time"])} ago'
@@ -243,7 +252,7 @@ async def drop_db_command(client: Client, message: Message):
 
     if message.chat.id == GROUP_ID:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
-        if membership.status not in ['administrator', 'creator']:
+        if membership.status != 'creator':
             return
 
     db.drop_database()
@@ -340,6 +349,67 @@ async def del_last_req_command(client: Client, message: Message):
                     f'{format_time_diff(cur_time, last_req["req_time"])} ago has been deleted',
                 quote=True
             )
+
+@app.on_message(filters=STATS_COMMAND_FILTER, group=8)
+async def get_global_stats(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    if message.chat.id == GROUP_ID:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
+
+    body = message.text
+    if body is None:
+        return
+
+    all_requests = db.get_requests()
+    all_requests_fulfilled = [req for req in all_requests if req['fulfill_time'] is not None]
+    english_requests = [req for req in all_requests if req['is_english']]
+    english_requests_fulfilled = [req for req in english_requests if req['fulfill_time'] is not None]
+    non_english_requests = [req for req in all_requests if not req['is_english']]
+    non_english_requests_fulfilled = [req for req in non_english_requests if req['fulfill_time'] is not None]
+
+    stats_text = f'<u>Eng. Req. Fulfilled</u>: {len(english_requests_fulfilled)} out of {len(english_requests)}\n'
+    stats_text += f'<u>Non-Eng. Req. Fulfilled</u>: {len(non_english_requests_fulfilled)} out of {len(non_english_requests)}\n'
+    stats_text += f'\n<u>Total Req. Fulfilled</u>: {len(all_requests_fulfilled)} out of {len(all_requests)}\n'
+
+    await message.reply_text(
+        text=stats_text,
+        quote=True
+    )
+
+@app.on_message(filters=HELP_COMMAND_FILTER, group=9)
+async def help_message(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    if message.chat.id == GROUP_ID:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
+
+    body = message.text
+    if body is None:
+        return
+
+    help_message = "<u>Commands:</u>\n" +\
+                "- /start : Get confirmation that bot is up (SUDO + ADMINS)\n" +\
+                "- /requests : Get user requests stats. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
+                "- /stats : Get global request stats (SUDO + ADMINS)\n" +\
+                "- /limits : Get current request limits (SUDO + ADMINS)\n" +\
+                "- /dellastreq : Delete the latest registered request of a user. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
+                "- /dropdb : Delete the whole database ⚠️ (SUDO + OWNER)\n"
+
+    await message.reply_text(
+        text=help_message,
+        quote=True
+    )
 
 
 app.run()

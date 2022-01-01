@@ -115,6 +115,12 @@ REQUESTS_COMMAND_FILTER = (
             filters.command('requests')
         )
 
+STATS_COMMAND_FILTER = (
+            (_COMMAND_CHATS_FILTER) &
+            filters.text &
+            filters.command('stats')
+        )
+
 CLEAR_LAST_REQUEST_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
             filters.text &
@@ -137,6 +143,12 @@ DROP_DB_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
             filters.text &
             filters.command('dropdb')
+        )
+
+HELP_COMMAND_FILTER = (
+            (_COMMAND_CHATS_FILTER) &
+            filters.text &
+            filters.command('help')
         )
 
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''
