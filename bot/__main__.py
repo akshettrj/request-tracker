@@ -194,10 +194,10 @@ async def get_user_data(client: Client, message: Message):
         req_by_req_time = sorted(user_requests, key=get_req_time)
         last_req = req_by_req_time[-1]
 
-        stats_text += f'\nThe {html_message_link(group_id, last_req["message_id"], "last one")} was {format_time_diff(cur_time, last_req["req_time"])} ago'
+        stats_text += f'\nThe {html_message_link(group_id, last_req["message_id"], "last one")} was {format_time_diff(cur_time, last_req["req_time"])}'
 
         if last_req['fulfill_time'] is not None:
-            stats_text += f' and it was {html_message_link(group_id, last_req["fulfill_message_id"], "fulfilled")} {format_time_diff(cur_time, last_req["fulfill_time"])} ago'
+            stats_text += f' and it was {html_message_link(group_id, last_req["fulfill_message_id"], "fulfilled")} {format_time_diff(cur_time, last_req["fulfill_time"])}'
 
     await message.reply_text(
                 text=stats_text,
@@ -346,7 +346,7 @@ async def del_last_req_command(client: Client, message: Message):
     await message.reply_text(
                 text=f'{html_message_link(group_id, last_req["message_id"], "Last request")} of ' +
                     f'{target_user.mention(target_user.first_name)} from ' +
-                    f'{format_time_diff(cur_time, last_req["req_time"])} ago has been deleted',
+                    f'{format_time_diff(cur_time, last_req["req_time"])} has been deleted',
                 quote=True
             )
 
