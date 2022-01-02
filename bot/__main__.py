@@ -3,7 +3,7 @@ from pyrogram.types.user_and_chats.chat_member import ChatMember
 from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, HELP_COMMAND_FILTER,
         LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
         GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER,
-        REQUESTS_COMMAND_FILTER, STATS_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER )
+        REQUESTS_COMMAND_FILTER, STATS_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER, SUDO_USERS )
 
 from pyrogram import Client
 from pyrogram.types import Message
@@ -132,7 +132,7 @@ async def get_user_data(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID:
+    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -212,7 +212,7 @@ async def start_command(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID:
+    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -229,7 +229,7 @@ async def limits_command(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID:
+    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -250,7 +250,7 @@ async def drop_db_command(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID:
+    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status != 'creator':
             return
@@ -271,7 +271,7 @@ async def del_last_req_command(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID:
+    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -357,7 +357,7 @@ async def get_global_stats(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID:
+    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -389,7 +389,7 @@ async def help_message(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID:
+    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
