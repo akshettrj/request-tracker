@@ -1,9 +1,9 @@
 from datetime import datetime
 from pyrogram.types.user_and_chats.chat_member import ChatMember
-from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, GROUP_NAME, HELP_COMMAND_FILTER,
-        LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
+from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DONE_COMMAND_FILTER, EZBOOKBOT_ID, GROUP_NAME, HELP_COMMAND_FILTER,
+        SESSION_STRING, LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
         GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER,
-        REQUESTS_COMMAND_FILTER, STATS_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER, SUDO_USERS )
+        REQUESTS_COMMAND_FILTER, STATS_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER, SUDO_USERS, logger )
 
 from pyrogram import Client
 from pyrogram.types import Message
@@ -14,12 +14,22 @@ from bot.helpers.database import Database
 
 db = Database(DATABASE_URL)
 
-app = Client(
-            session_name='req_delete_bot',
-            api_hash=API_HASH,
-            api_id=API_ID,
-            bot_token=BOT_TOKEN,
-        )
+app = None
+if SESSION_STRING != '':
+    app = Client(
+                SESSION_STRING,
+                api_hash=API_HASH,
+                api_id=API_ID,
+            )
+    logger.info("Logging in using SESSION_STRING")
+else:
+    app = Client(
+                session_name='req_delete_bot',
+                api_hash=API_HASH,
+                api_id=API_ID,
+                bot_token=BOT_TOKEN,
+            )
+    logger.info("Logging in using BOT_TOKEN")
 
 @app.on_message(filters=FULFILL_FILTER, group=0)
 async def request_fulfill_handler(client: Client, message: Message):
@@ -36,9 +46,11 @@ async def request_fulfill_handler(client: Client, message: Message):
     if replied_to is None:
         return
 
-    media = get_message_media(message)
-    if media is None:
-        return
+    if user.id != EZBOOKBOT_ID:
+
+        media = get_message_media(message)
+        if media is None:
+            return
 
     if not is_a_request(replied_to):
         return None
@@ -132,7 +144,7 @@ async def get_user_data(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -212,7 +224,7 @@ async def start_command(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -229,7 +241,7 @@ async def limits_command(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -250,7 +262,7 @@ async def drop_db_command(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status != 'creator':
             return
@@ -271,7 +283,7 @@ async def del_last_req_command(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -357,7 +369,7 @@ async def get_global_stats(client: Client, message: Message):
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -383,14 +395,64 @@ async def get_global_stats(client: Client, message: Message):
         quote=True
     )
 
-@app.on_message(filters=HELP_COMMAND_FILTER, group=9)
+
+@app.on_message(filters=DONE_COMMAND_FILTER, group=9)
+async def mark_request_done(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
+
+    body = message.text
+    if body is None:
+        return
+
+    replied_to = message.reply_to_message
+    if (replied_to is None) or (not is_a_request(replied_to)):
+        await message.reply(
+            text="Please reply to a request message",
+            quote=True
+        )
+        return
+
+    target_user = replied_to.from_user
+    if target_user is None:
+        await message.reply(
+            text="Couldn't find any user in the replied message :panick:",
+            quote=True
+        )
+        return
+
+    user_id = db.get_user(target_user.id)
+    if user_id is None:
+        db.add_user(target_user.id)
+    user_id = target_user.id
+
+    is_english = is_english_request(replied_to)
+    if db.get_request(user_id, replied_to.message_id)[0] is None:
+        db.register_request(user_id, is_english, replied_to.message_id)
+
+    db.register_request_fulfillment(user_id, replied_to.message_id, message.message_id)
+
+    group_id = int(str(GROUP_ID)[4:])
+    await message.reply_text(
+        text=f"{html_message_link(group_id, replied_to.message_id, 'Request')} marked as fulfilled\n",
+        quote=True
+    )
+
+@app.on_message(filters=HELP_COMMAND_FILTER, group=10)
 async def help_message(client: Client, message: Message):
 
     user = message.from_user
     if user is None:
         return
 
-    if message.chat.id == GROUP_ID and message.from_user.id not in SUDO_USERS:
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
         membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
         if membership.status not in ['administrator', 'creator']:
             return
@@ -404,6 +466,7 @@ async def help_message(client: Client, message: Message):
                 "- /requests : Get user requests stats. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
                 "- /stats : Get global request stats (SUDO + ADMINS)\n" +\
                 "- /limits : Get current request limits (SUDO + ADMINS)\n" +\
+                "- /done : Manually mark a request as completed incase the media is not replied to request (SUDO + ADMINS)\n" +\
                 "- /dellastreq : Delete the latest registered request of a user. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
                 "- /dropdb : Delete the whole database ⚠️ (SUDO + OWNER)\n"
 

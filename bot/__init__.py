@@ -33,8 +33,11 @@ if API_HASH == '':
     _missing_env_var('API_HASH')
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN', '')
-if BOT_TOKEN == '':
-    _missing_env_var('BOT_TOKEN')
+SESSION_STRING = os.environ.get('SESSION_STRING', '')
+
+if BOT_TOKEN == '' and SESSION_STRING == '':
+    logger.error('Set either BOT_TOKEN or SESSION_STRING to continue!')
+    exit(1)
 
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -45,6 +48,8 @@ if GROUP_ID == -1:
 GROUP_NAME = os.environ.get('GROUP_NAME', '')
 if GROUP_NAME == '':
     _missing_env_var('GROUP_NAME')
+
+EZBOOKBOT_ID = int(os.environ.get('EZBOOKBOT_ID', '1699727751'))
 
 _SUDO_USERS = os.environ.get('SUDO_USERS', '').split()
 if len(_SUDO_USERS) == 0:
@@ -112,13 +117,25 @@ async def check_sudo_or_group(_, __, update: Message):
 
     return False
 
+async def ez_book_bot_message(_, __, update: Message):
+
+    user = update.from_user
+    if user is None:
+        return False
+
+    if user.id == EZBOOKBOT_ID:
+        return True
+
+    return False
+
+_EZBOOK_BOT_FILTER = filters.create(ez_book_bot_message)
+
 _COMMAND_CHATS_FILTER = filters.create(check_sudo_or_group)
 
 
 FULFILL_FILTER = (
-            ~filters.edited &
             filters.chat(GROUP_ID) &
-            (filters.audio | filters.document | filters.voice)
+            (filters.audio | filters.document | filters.voice | _EZBOOK_BOT_FILTER)
         )
 
 REQUEST_FILTER = (
@@ -143,6 +160,12 @@ CLEAR_LAST_REQUEST_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
             filters.text &
             filters.command('dellastreq')
+        )
+
+DONE_COMMAND_FILTER = (
+            (_COMMAND_CHATS_FILTER) &
+            filters.text &
+            filters.command('done')
         )
 
 START_COMMAND_FILTER = (
