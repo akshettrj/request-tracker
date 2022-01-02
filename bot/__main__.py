@@ -1,6 +1,6 @@
 from datetime import datetime
 from pyrogram.types.user_and_chats.chat_member import ChatMember
-from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, HELP_COMMAND_FILTER,
+from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, GROUP_NAME, HELP_COMMAND_FILTER,
         LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
         GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER,
         REQUESTS_COMMAND_FILTER, STATS_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER, SUDO_USERS )
@@ -373,7 +373,8 @@ async def get_global_stats(client: Client, message: Message):
     non_english_requests = [req for req in all_requests if not req['is_english']]
     non_english_requests_fulfilled = [req for req in non_english_requests if req['fulfill_time'] is not None]
 
-    stats_text = f'<u>Eng. Req. Fulfilled</u>: {len(english_requests_fulfilled)} out of {len(english_requests)}\n'
+    stats_text = f'Stats for {GROUP_NAME}\n\n'
+    stats_text += f'<u>Eng. Req. Fulfilled</u>: {len(english_requests_fulfilled)} out of {len(english_requests)}\n'
     stats_text += f'<u>Non-Eng. Req. Fulfilled</u>: {len(non_english_requests_fulfilled)} out of {len(non_english_requests)}\n'
     stats_text += f'\n<u>Total Req. Fulfilled</u>: {len(all_requests_fulfilled)} out of {len(all_requests)}\n'
 

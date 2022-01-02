@@ -42,6 +42,10 @@ GROUP_ID = int(os.environ.get('GROUP_ID', '-1'))
 if GROUP_ID == -1:
     _missing_env_var('GROUP_ID')
 
+GROUP_NAME = os.environ.get('GROUP_NAME', '')
+if GROUP_NAME == '':
+    _missing_env_var('GROUP_NAME')
+
 _SUDO_USERS = os.environ.get('SUDO_USERS', '').split()
 if len(_SUDO_USERS) == 0:
     _missing_env_var('SUDO_USERS')
