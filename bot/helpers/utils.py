@@ -76,14 +76,10 @@ def get_message_media(message: Message):
 
     doc = message.document
 
-    if doc is None or doc.file_name is None:
+    if doc is None:
         return None
 
-
-    if (".zip" in doc.file_name) or (".opus" in doc.file_name):
-        return doc
-
-    return None
+    return doc
 
 def time_gap_not_crossed(curr_time: datetime, old_time: datetime, gap):
 
