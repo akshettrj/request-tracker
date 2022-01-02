@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 
 import logging
 
+from pyrogram.types.messages_and_media.message import Message
+
 logging.basicConfig(
         format='[%(levelname)s] (%(asctime)s) %(message)s'
         )
@@ -96,9 +98,18 @@ EXCLUDED_HASHTAGS = set([hashtag.lower() for hashtag in EXCLUDED_HASHTAGS])
 
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-_COMMAND_CHATS_FILTER = filters.chat(GROUP_ID)
-for user_id in SUDO_USERS:
-    _COMMAND_CHATS_FILTER = _COMMAND_CHATS_FILTER | filters.chat(user_id)
+async def check_sudo_or_group(_, __, update: Message):
+
+    if update.from_user.id in SUDO_USERS:
+        return True
+
+    if update.chat.id == GROUP_ID:
+        return True
+
+    return False
+
+_COMMAND_CHATS_FILTER = filters.create(check_sudo_or_group)
+
 
 FULFILL_FILTER = (
             ~filters.edited &
