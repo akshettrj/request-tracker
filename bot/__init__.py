@@ -109,8 +109,14 @@ EXCLUDED_HASHTAGS = set([hashtag.lower() for hashtag in EXCLUDED_HASHTAGS])
 
 async def check_sudo_or_group(_, __, update: Message):
 
+    if update.from_user is None:
+        return False
+
     if update.from_user.id in SUDO_USERS:
         return True
+
+    if update.chat is None:
+        return False
 
     if update.chat.id == GROUP_ID:
         return True
