@@ -1,4 +1,5 @@
 from datetime import datetime
+from bot import EXCLUDED_HASHTAGS
 from pyrogram.types.messages_and_media.message import Message, Str
 
 
@@ -11,6 +12,7 @@ def is_a_request(message: Message) -> bool:
     body_lines = body.split('\n')
 
     first_line_words = body_lines[0].split()
+    first_line_words = [i.lower() for i in first_line_words if i.lower() not in EXCLUDED_HASHTAGS]
 
     if "#request" in first_line_words and "#audiobook" in first_line_words:
         return True
@@ -27,6 +29,7 @@ def is_english_request(message: Message):
     body_lines = body.split('\n')
 
     first_line_words = body_lines[0].split()
+    first_line_words = [i.lower() for i in first_line_words if i.lower() not in EXCLUDED_HASHTAGS]
 
     if (
         len(first_line_words) == 2 and

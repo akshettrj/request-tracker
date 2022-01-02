@@ -91,6 +91,9 @@ elif REQ_TIMES['non_eng']['type'] == 'min':
 elif REQ_TIMES['non_eng']['type'] == 's':
     REQ_TIMES['non_eng']['full'] = f'{REQ_TIMES["non_eng"]["value"]} seconds'
 
+EXCLUDED_HASHTAGS = os.environ.get('EXCLUDED_HASHTAGS', '#scribd #storytel').strip().split()
+EXCLUDED_HASHTAGS = set([hashtag.lower() for hashtag in EXCLUDED_HASHTAGS])
+
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 _COMMAND_CHATS_FILTER = filters.chat(GROUP_ID)
