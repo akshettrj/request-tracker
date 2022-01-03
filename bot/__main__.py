@@ -129,7 +129,8 @@ async def request_handler(client: Client, message: Message):
             await message.delete()
             await client.send_message(
                 chat_id=GROUP_ID,
-                text=f"{user.mention(user.first_name)}, your {last_req_str} " +\
+                text=f"{user.mention(user.first_name)}, your " + \
+                        f"{html_message_link(group_id, last_req['message_id'], last_req_str)} " +\
                         f"{html_message_link(group_id, last_req['fulfill_message_id'], 'was fulfilled')} " +\
                         f"less than {req_time['full']} ago and hence is deleted."
             )
