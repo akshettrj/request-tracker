@@ -479,9 +479,22 @@ async def get_pending_requests(client: Client, message: Message):
     pending_req_text = f'Here are the oldest pending requests:\n\n'
 
     group_id = int(str(GROUP_ID)[4:])
+    cur_time = datetime.now()
+
     for indx,request in enumerate(pending_requests):
 
-        pending_req_text += f'{indx+1}. {html_message_link(group_id, request["message_id"], f"Request {indx+1}")}\n'
+        target_user = None
+        try:
+            target_user = await client.get_chat_member(GROUP_ID, request['user_id'])
+        except Exception as _:
+        # if target_user is None:
+            print(f"Error: {_}")
+            continue
+
+        target_user = target_user.user
+        pending_req_text += f'{indx+1}. {html_message_link(group_id, request["message_id"], f"Request {indx+1}")}, '
+        pending_req_text += f'by {target_user.mention(target_user.first_name)}, '
+        pending_req_text += f'<i>{format_time_diff(cur_time, request["req_time"])}</i>'
 
     await message.reply_text(
         text=pending_req_text,
