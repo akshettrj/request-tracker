@@ -61,9 +61,9 @@ def format_time_diff(t1: datetime, t2: datetime):
 
     t_secs = ""
     if t_diff.days == 0 and hours == 0 and mins == 0:
-        t_secs = f"{t_diff.seconds % 60} s"
+        t_secs = f"{t_diff.seconds % 60} s "
 
-    return f"{t_days}{t_hours}{t_mins}{t_secs} ago"
+    return f"{t_days}{t_hours}{t_mins}{t_secs}ago"
 
 
 def get_message_media(message: Message):

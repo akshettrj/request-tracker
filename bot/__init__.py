@@ -168,6 +168,12 @@ CLEAR_LAST_REQUEST_COMMAND_FILTER = (
             filters.command('dellastreq')
         )
 
+DEL_REQUEST_COMMAND_FILTER = (
+            (_COMMAND_CHATS_FILTER) &
+            filters.text &
+            filters.command('delreq')
+        )
+
 DONE_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
             filters.text &

@@ -1,6 +1,6 @@
 from datetime import datetime
 from pyrogram.types.user_and_chats.chat_member import ChatMember
-from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DONE_COMMAND_FILTER, EZBOOKBOT_ID, GROUP_NAME, HELP_COMMAND_FILTER, PENDING_COMMAND_FILTER,
+from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DEL_REQUEST_COMMAND_FILTER, DONE_COMMAND_FILTER, EZBOOKBOT_ID, GROUP_NAME, HELP_COMMAND_FILTER, PENDING_COMMAND_FILTER,
         SESSION_STRING, LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
         GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER,
         REQUESTS_COMMAND_FILTER, STATS_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER, SUDO_USERS, logger )
@@ -362,6 +362,52 @@ async def del_last_req_command(client: Client, message: Message):
                 quote=True
             )
 
+@app.on_message(filters=DEL_REQUEST_COMMAND_FILTER, group=12)
+async def del_req_command(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
+
+    body = message.text
+    if body is None:
+        return
+
+    target_message_id = -1
+
+    body_split = body.split("\n")[0].split()
+
+    if len(body_split) >= 2:
+        arg = body_split[1]
+        if arg.isnumeric():
+            target_message_id = int(arg)
+
+    replied_to = message.reply_to_message
+    if target_message_id == -1:
+        if replied_to is None:
+            await message.reply_text(
+                text='<b>Usages:</b>\n' +
+                '1. <code>/delreq <message_id></code>\n' +
+                '2. Reply <code>/delreq</code> to a user\'s message',
+                quote=True
+            )
+            return
+        else:
+            target_message_id = replied_to.message_id
+
+    db.delete_request(target_message_id)
+
+    await message.reply_text(
+        text="The request has been deleted from records",
+        quote=True
+    )
+
+
 @app.on_message(filters=STATS_COMMAND_FILTER, group=8)
 async def get_global_stats(client: Client, message: Message):
 
@@ -494,7 +540,8 @@ async def get_pending_requests(client: Client, message: Message):
         # target_user = target_user.user
         pending_req_text += f'{indx+1}. {html_message_link(group_id, request["message_id"], f"Request {indx+1}")}, '
         # pending_req_text += f'by {target_user.mention(target_user.first_name)}, '
-        pending_req_text += f'<i>{format_time_diff(cur_time, request["req_time"])}</i>\n'
+        pending_req_text += f'<i>{format_time_diff(cur_time, request["req_time"])}</i> '
+        pending_req_text += f'(<code>/delreq {request["message_id"]}</code>)\n'
 
     await message.reply_text(
         text=pending_req_text,
@@ -522,9 +569,11 @@ async def help_message(client: Client, message: Message):
                 "- /start : Get confirmation that bot is up (SUDO + ADMINS)\n" +\
                 "- /requests : Get user requests stats. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
                 "- /stats : Get global request stats (SUDO + ADMINS)\n" +\
+                "- /pending : Get current pending requests (SUDO + ADMINS)\n" +\
                 "- /limits : Get current request limits (SUDO + ADMINS)\n" +\
                 "- /done : Manually mark a request as completed incase the media is not replied to request (SUDO + ADMINS)\n" +\
                 "- /dellastreq : Delete the latest registered request of a user. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
+                "- /delreq : Delete request based on message id. Pass in message_id or reply to request message (SUDO + ADMINS)\n" +\
                 "- /dropdb : Delete the whole database ⚠️ (SUDO + OWNER)\n"
 
     await message.reply_text(

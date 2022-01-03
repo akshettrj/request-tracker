@@ -185,11 +185,11 @@ class Database:
         return pending_requests
 
 
-    def delete_request(self, user_id: int, message_id: int):
+    def delete_request(self, message_id: int):
         cur = self.connection.cursor()
         cur.execute(
-            "DELETE FROM requests WHERE user_id = %s AND message_id = %s;",
-            [user_id, message_id]
+            "DELETE FROM requests WHERE message_id = %s;",
+            [message_id]
         )
         self.connection.commit()
         cur.close()
