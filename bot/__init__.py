@@ -186,6 +186,12 @@ LIMITS_COMMAND_FILTER = (
             filters.command('limits')
         )
 
+PENDING_COMMAND_FILTER = (
+            (_COMMAND_CHATS_FILTER) &
+            filters.text &
+            filters.command('pending')
+        )
+
 DROP_DB_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
             filters.text &

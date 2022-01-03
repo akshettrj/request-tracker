@@ -153,6 +153,38 @@ class Database:
                 ]
         return requests
 
+
+    def get_pending_requests(self):
+
+        cur = self.connection.cursor()
+        cur.execute(
+            "SELECT " +
+                "user_id, is_english, message_id, req_time " +
+            "FROM requests WHERE fulfill_time is NULL;",
+        )
+        pending_requests = []
+        while True:
+            ( usr_id, is_english, msg_id,
+            req_time ) = next(cur, (None, None, None, None))
+            if usr_id is None:
+                break
+
+            pending_requests.append(( usr_id, is_english, msg_id,
+            req_time ))
+
+        cur.close()
+        pending_requests = [
+                    {
+                        'user_id': req[0],
+                        'is_english': req[1],
+                        'message_id': req[2],
+                        'req_time': req[3]
+                    }
+                    for req in pending_requests
+                ]
+        return pending_requests
+
+
     def delete_request(self, user_id: int, message_id: int):
         cur = self.connection.cursor()
         cur.execute(

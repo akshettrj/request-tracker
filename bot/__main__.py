@@ -1,6 +1,6 @@
 from datetime import datetime
 from pyrogram.types.user_and_chats.chat_member import ChatMember
-from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DONE_COMMAND_FILTER, EZBOOKBOT_ID, GROUP_NAME, HELP_COMMAND_FILTER,
+from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DONE_COMMAND_FILTER, EZBOOKBOT_ID, GROUP_NAME, HELP_COMMAND_FILTER, PENDING_COMMAND_FILTER,
         SESSION_STRING, LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
         GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER,
         REQUESTS_COMMAND_FILTER, STATS_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER, SUDO_USERS, logger )
@@ -445,7 +445,51 @@ async def mark_request_done(client: Client, message: Message):
         quote=True
     )
 
-@app.on_message(filters=HELP_COMMAND_FILTER, group=10)
+
+@app.on_message(filters=PENDING_COMMAND_FILTER, group=10)
+async def get_pending_requests(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
+
+    body = message.text
+    if body is None:
+        return
+
+    pending_requests = db.get_pending_requests()
+
+    if len(pending_requests) == 0:
+        await message.reply_text(
+            text="There are no pending requests in records :)",
+            quote=True
+        )
+        return
+
+    def get_req_time(req):
+        return req['req_time']
+
+    pending_requests = sorted(pending_requests, key=get_req_time)
+
+    pending_req_text = f'Here are the oldest pending requests:\n\n'
+
+    group_id = int(str(GROUP_ID)[4:])
+    for indx,request in enumerate(pending_requests):
+
+        pending_req_text += f'{indx+1}. {html_message_link(group_id, request["message_id"], f"Request {indx+1}")}\n'
+
+    await message.reply_text(
+        text=pending_req_text,
+        quote=True
+    )
+
+
+@app.on_message(filters=HELP_COMMAND_FILTER, group=11)
 async def help_message(client: Client, message: Message):
 
     user = message.from_user
