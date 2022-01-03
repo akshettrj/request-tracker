@@ -120,7 +120,7 @@ async def request_handler(client: Client, message: Message):
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " +\
                         f"{html_message_link(group_id, last_req['message_id'], last_req_str)} " +\
-                        f"was less than {req_time['full']} ago and hence is deleted."
+                        f"was less than {req_time['full']} ago and hence the new one is deleted."
             )
             return
 
@@ -132,7 +132,7 @@ async def request_handler(client: Client, message: Message):
                 text=f"{user.mention(user.first_name)}, your " + \
                         f"{html_message_link(group_id, last_req['message_id'], last_req_str)} " +\
                         f"{html_message_link(group_id, last_req['fulfill_message_id'], 'was fulfilled')} " +\
-                        f"less than {req_time['full']} ago and hence is deleted."
+                        f"less than {req_time['full']} ago and hence the new one is deleted."
             )
             return
 
