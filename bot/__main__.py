@@ -1,6 +1,6 @@
 from datetime import datetime
 from pyrogram.types.user_and_chats.chat_member import ChatMember
-from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DEL_REQUEST_COMMAND_FILTER, DONE_COMMAND_FILTER, EZBOOKBOT_ID, GROUP_NAME, HELP_COMMAND_FILTER, PENDING_COMMAND_FILTER,
+from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DEL_REQUEST_COMMAND_FILTER, DONE_COMMAND_FILTER, EZBOOKBOT_ID, GROUP_NAME, HELP_COMMAND_FILTER, LAST_FILLED_COMMAND_FILTER, PENDING_COMMAND_FILTER,
         SESSION_STRING, LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
         GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER,
         REQUESTS_COMMAND_FILTER, STATS_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER, SUDO_USERS, logger )
@@ -574,6 +574,42 @@ async def help_message(client: Client, message: Message):
 
     await message.reply_text(
         text=help_message,
+        quote=True
+    )
+
+
+@app.on_message(filters=LAST_FILLED_COMMAND_FILTER, group=14)
+async def last_filled_command(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
+
+    body = message.text
+    if body is None:
+        return
+
+    last_filled_req = db.get_latest_fulfilled()
+    if last_filled_req['user_id'] is None:
+        await message.reply_text(
+            text="No request has been fulfilled till now 😢",
+            quote=True
+        )
+        return
+
+    group_id = int(str(GROUP_ID)[4:])
+    reply_text = "<b>The latest fulfilled request was:</b>\n\n"
+    reply_text += f"<b>Type:</b> {'English' if last_filled_req['is_english'] else 'Non English'}\n"
+    reply_text += f"<b>Request:</b> {html_message_link(group_id, last_filled_req['message_id'], 'Link')}\n"
+    reply_text += f"<b>Fulfilled:</b> {html_message_link(group_id, last_filled_req['fulfill_message_id'], 'Link')}\n"
+
+    await message.reply_text(
+        text=reply_text,
         quote=True
     )
 

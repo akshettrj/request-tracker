@@ -246,6 +246,34 @@ class Database:
         return req_time
 
 
+    def get_latest_fulfilled(self):
+
+        cur = self.connection.cursor()
+        cur.execute(
+            "SELECT " +
+                "user_id, is_english, message_id, req_time," +
+                "fulfill_message_id, fulfill_time " +
+            "FROM requests " +
+            "WHERE fulfill_time is NOT NULL " +
+            "ORDER BY" +
+            "   fulfill_time DESC LIMIT 1;"
+        )
+
+        ( usr_id, is_english, msg_id,
+        req_time, fulfill_message_id, fulfill_time ) = next(cur, (None, None, None, None, None, None))
+
+        cur.close()
+
+        return {
+            'user_id': usr_id,
+            'is_english': is_english,
+            'message_id': msg_id,
+            'req_time': req_time,
+            'fulfill_message_id': fulfill_message_id,
+            'fulfill_time': fulfill_time
+        }
+
+
     def get_request(self, user_id: int, message_id: int):
         cur = self.connection.cursor()
         cur.execute(

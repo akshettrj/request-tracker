@@ -206,6 +206,13 @@ PENDING_COMMAND_FILTER = (
             filters.command('pending')
         )
 
+LAST_FILLED_COMMAND_FILTER = (
+            (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
+            filters.text &
+            filters.command('lastfilled')
+        )
+
 DROP_DB_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
             ~filters.edited &
