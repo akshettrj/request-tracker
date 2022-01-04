@@ -354,7 +354,7 @@ async def del_last_req_command(client: Client, message: Message):
     req_by_req_time = sorted(user_requests, key=get_req_time)
     last_req = req_by_req_time[-1]
 
-    db.delete_request(target_user_id, last_req['message_id'])
+    db.delete_request(last_req['message_id'])
 
     await message.reply_text(
                 text=f'{html_message_link(group_id, last_req["message_id"], "Last request")} of ' +
