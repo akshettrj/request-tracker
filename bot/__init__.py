@@ -152,60 +152,70 @@ REQUEST_FILTER = (
 
 REQUESTS_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
             filters.text &
             filters.command('requests')
         )
 
 STATS_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
             filters.text &
             filters.command('stats')
         )
 
 CLEAR_LAST_REQUEST_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
             filters.text &
             filters.command('dellastreq')
         )
 
 DEL_REQUEST_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
             filters.text &
             filters.command('delreq')
         )
 
 DONE_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
             filters.text &
             filters.command('done')
         )
 
 START_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
             filters.text &
             filters.command('start')
         )
 
 LIMITS_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
             filters.text &
             filters.command('limits')
         )
 
 PENDING_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
             filters.text &
             filters.command('pending')
         )
 
 DROP_DB_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
             filters.text &
             filters.command('dropdb')
         )
 
 HELP_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
             filters.text &
             filters.command('help')
         )
