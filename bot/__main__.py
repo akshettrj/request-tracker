@@ -422,7 +422,12 @@ async def get_global_stats(client: Client, message: Message):
 
     all_requests = english_requests + non_english_requests
 
-    stats_text = f'<b>Stats for {GROUP_NAME}</b>\n\n'
+    date = None
+    oldest_req_time = db.get_oldest_request_time()
+    if oldest_req_time is not None:
+        date = oldest_req_time[0].date()
+
+    stats_text = f'<b>Stats for {GROUP_NAME} {f"since {date}" if date is not None else ""}</b>\n\n'
     stats_text += f'<b>Eng. Requests</b> : {english_fulfilled} / {english_requests}\n'
     stats_text += f'<b>Non-Eng. Requests</b> : {non_english_fulfilled} / {non_english_requests}\n\n'
     stats_text += f'<b>Total Requests Fulfilled</b> : {all_requests_fulfilled} / {all_requests}'

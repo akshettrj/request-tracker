@@ -228,6 +228,24 @@ class Database:
         return user_requests
 
 
+    def get_oldest_request_time(self):
+
+        cur = self.connection.cursor()
+        cur.execute(
+            "SELECT " +
+                "req_time " +
+            "FROM requests " +
+            "ORDER BY" +
+            "   req_time ASC LIMIT 1;"
+        )
+
+        (req_time) = next(cur, (None))
+
+        cur.close()
+
+        return req_time
+
+
     def get_request(self, user_id: int, message_id: int):
         cur = self.connection.cursor()
         cur.execute(
