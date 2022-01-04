@@ -603,10 +603,12 @@ async def last_filled_command(client: Client, message: Message):
         return
 
     group_id = int(str(GROUP_ID)[4:])
+    cur_time = datetime.now()
+
     reply_text = "<b>The latest fulfilled request was:</b>\n\n"
     reply_text += f"<b>Type:</b> {'English' if last_filled_req['is_english'] else 'Non English'}\n"
-    reply_text += f"<b>Request:</b> {html_message_link(group_id, last_filled_req['message_id'], 'Link')}\n"
-    reply_text += f"<b>Fulfilled:</b> {html_message_link(group_id, last_filled_req['fulfill_message_id'], 'Link')}\n"
+    reply_text += f"{html_message_link(group_id, last_filled_req['message_id'], 'Request')} was {format_time_diff(cur_time, last_filled_req['req_time'])}\n"
+    reply_text += f"Was {html_message_link(group_id, last_filled_req['fulfill_message_id'], 'Fulfilled')} {format_time_diff(cur_time, last_filled_req['fulfill_time'])}\n"
 
     await message.reply_text(
         text=reply_text,
