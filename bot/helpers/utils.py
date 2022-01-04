@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from bot import EXCLUDED_HASHTAGS
 from pyrogram.types.messages_and_media.message import Message, Str
 
@@ -96,3 +96,24 @@ def time_gap_not_crossed(curr_time: datetime, old_time: datetime, gap):
     elif gap['type'] == 's':
         time_diff = curr_time - old_time
         return time_diff.seconds < gap['value']
+
+
+def format_date(d: date):
+
+    date_string = ""
+
+    if d.day < 10:
+        date_string += f"0{d.day}"
+    else:
+        date_string += f"{d.day}"
+
+    date_string += "-"
+
+    if d.month < 10:
+        date_string += f"0{d.month}"
+    else:
+        date_string += f"{d.month}"
+
+    date_string += f"-{d.year}"
+
+    return date_string

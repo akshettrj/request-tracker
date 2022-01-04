@@ -7,7 +7,7 @@ from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DEL_REQUEST_COMM
 
 from pyrogram import Client
 from pyrogram.types import Message
-from bot.helpers.utils import ( format_time_diff, get_message_media, is_a_request,
+from bot.helpers.utils import ( format_date, format_time_diff, get_message_media, is_a_request,
         is_english_request, html_message_link, time_gap_not_crossed )
 
 from bot.helpers.database import Database
@@ -427,7 +427,7 @@ async def get_global_stats(client: Client, message: Message):
     if oldest_req_time is not None:
         date = oldest_req_time[0].date()
 
-    stats_text = f'<b>Stats for {GROUP_NAME} {f"since {date}" if date is not None else ""}</b>\n\n'
+    stats_text = f'<b>Stats for {GROUP_NAME} {f"since {format_date(date)}" if date is not None else ""}</b>\n\n'
     stats_text += f'<b>Eng. Requests</b> : {english_fulfilled} / {english_requests}\n'
     stats_text += f'<b>Non-Eng. Requests</b> : {non_english_fulfilled} / {non_english_requests}\n\n'
     stats_text += f'<b>Total Requests Fulfilled</b> : {all_requests_fulfilled} / {all_requests}'
