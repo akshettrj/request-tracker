@@ -98,40 +98,33 @@ async def request_handler(client: Client, message: Message):
     cur_time = datetime.now()
     group_id = int(str(GROUP_ID)[4:])
 
-    user_requests = db.get_user_requests(user.id)
-
-    if len(user_requests) == 0:
+    user_last_request = db.get_user_last_request(user.id)
+    if user_last_request['user_id'] is None:
         db.register_request(user.id, is_english, message.message_id)
         return
 
-    def get_req_time(req):
-        return req['req_time']
+    req_time = REQ_TIMES['eng'] if user_last_request['is_english'] else REQ_TIMES['non_eng']
+    last_req_str = 'last English request' if user_last_request['is_english'] else 'last Non-English request'
 
-    req_by_req_time = sorted(user_requests, key=get_req_time)
-
-    last_req = req_by_req_time[-1]
-    req_time = REQ_TIMES['eng'] if last_req['is_english'] else REQ_TIMES['non_eng']
-    last_req_str = 'last English request' if last_req['is_english'] else 'last Non-English request'
-
-    if last_req['fulfill_message_id'] is None:
-        if time_gap_not_crossed(cur_time, last_req['req_time'], req_time):
+    if user_last_request['fulfill_message_id'] is None:
+        if time_gap_not_crossed(cur_time, user_last_request['req_time'], req_time):
             await message.delete()
             await client.send_message(
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " +\
-                        f"{html_message_link(group_id, last_req['message_id'], last_req_str)} " +\
+                        f"{html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
                         f"was less than {req_time['full']} ago and hence the new one is deleted."
             )
             return
 
     else:
-        if time_gap_not_crossed(cur_time, last_req['fulfill_time'], req_time):
+        if time_gap_not_crossed(cur_time, user_last_request['fulfill_time'], req_time):
             await message.delete()
             await client.send_message(
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " + \
-                        f"{html_message_link(group_id, last_req['message_id'], last_req_str)} " +\
-                        f"{html_message_link(group_id, last_req['fulfill_message_id'], 'was fulfilled')} " +\
+                        f"{html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
+                        f"{html_message_link(group_id, user_last_request['fulfill_message_id'], 'was fulfilled')} " +\
                         f"less than {req_time['full']} ago and hence the new one is deleted."
             )
             return
@@ -186,26 +179,26 @@ async def get_user_data(client: Client, message: Message):
         )
         return
 
-    user_requests = db.get_user_requests(target_user_id)
-    stats_text = f'There are currently {len(user_requests)} requests registered in database for this user.\n'
+    ( english_fulfilled, non_english_fulfilled,
+    english_not_fulfilled, non_english_not_fulfilled ) = db.get_user_stats(target_user_id)
 
-    if len(user_requests) > 0:
+    total_requests = sum((english_fulfilled, non_english_fulfilled,
+    english_not_fulfilled, non_english_not_fulfilled))
+
+    stats_text = f'There are currently {total_requests} requests registered in database for this user.\n'
+
+    if total_requests > 0:
 
         cur_time = datetime.now()
         group_id = int(str(GROUP_ID)[4:])
-        def get_req_time(req):
-            return req['req_time']
 
-        english_requests = [req for req in user_requests if req['is_english']]
-        english_requests_fulfilled = [req for req in english_requests if req['fulfill_time'] is not None]
-        non_english_requests = [req for req in user_requests if not req['is_english']]
-        non_english_requests_fulfilled = [req for req in non_english_requests if req['fulfill_time'] is not None]
+        english_requests = english_fulfilled + english_not_fulfilled
+        non_english_requests = non_english_fulfilled + non_english_not_fulfilled
 
-        stats_text += f"\n<u>Eng. Req. Fulfilled</u>: {len(english_requests_fulfilled)} out of {len(english_requests)}\n"
-        stats_text += f"<u>Non-Eng. Req. Fulfilled</u>: {len(non_english_requests_fulfilled)} out of {len(non_english_requests)}\n"
+        stats_text += f"\n<b>Eng. Requests</b>: {english_fulfilled} / {english_requests}\n"
+        stats_text += f"<b>Non-Eng. Requests</b>: {non_english_fulfilled} / {non_english_requests}\n"
 
-        req_by_req_time = sorted(user_requests, key=get_req_time)
-        last_req = req_by_req_time[-1]
+        last_req = db.get_user_last_request(target_user_id)
 
         stats_text += f'\nThe {html_message_link(group_id, last_req["message_id"], "last one")} was {format_time_diff(cur_time, last_req["req_time"])}'
 
@@ -337,9 +330,9 @@ async def del_last_req_command(client: Client, message: Message):
         )
         return
 
-    user_requests = db.get_user_requests(target_user_id)
+    last_req = db.get_user_last_request(target_user_id)
 
-    if len(user_requests) == 0:
+    if last_req['user_id'] is None:
         await message.reply_text(
             text='There are no records for the user yet.',
             quote=True
@@ -348,11 +341,6 @@ async def del_last_req_command(client: Client, message: Message):
 
     cur_time = datetime.now()
     group_id = int(str(GROUP_ID)[4:])
-    def get_req_time(req):
-        return req['req_time']
-
-    req_by_req_time = sorted(user_requests, key=get_req_time)
-    last_req = req_by_req_time[-1]
 
     db.delete_request(last_req['message_id'])
 
@@ -425,17 +413,19 @@ async def get_global_stats(client: Client, message: Message):
     if body is None:
         return
 
-    all_requests = db.get_requests()
-    all_requests_fulfilled = [req for req in all_requests if req['fulfill_time'] is not None]
-    english_requests = [req for req in all_requests if req['is_english']]
-    english_requests_fulfilled = [req for req in english_requests if req['fulfill_time'] is not None]
-    non_english_requests = [req for req in all_requests if not req['is_english']]
-    non_english_requests_fulfilled = [req for req in non_english_requests if req['fulfill_time'] is not None]
+    ( english_fulfilled, non_english_fulfilled,
+    english_not_fulfilled, non_english_not_fulfilled ) = db.get_global_stats()
 
-    stats_text = f'Stats for {GROUP_NAME}\n\n'
-    stats_text += f'<u>Eng. Req. Fulfilled</u>: {len(english_requests_fulfilled)} out of {len(english_requests)}\n'
-    stats_text += f'<u>Non-Eng. Req. Fulfilled</u>: {len(non_english_requests_fulfilled)} out of {len(non_english_requests)}\n'
-    stats_text += f'\n<u>Total Req. Fulfilled</u>: {len(all_requests_fulfilled)} out of {len(all_requests)}\n'
+    all_requests_fulfilled = english_fulfilled + non_english_fulfilled
+    english_requests = english_fulfilled + english_not_fulfilled
+    non_english_requests = non_english_fulfilled + non_english_not_fulfilled
+
+    all_requests = english_requests + non_english_requests
+
+    stats_text = f'<b>Stats for {GROUP_NAME}</b>\n\n'
+    stats_text += f'<b>Eng. Requests</b> : {english_fulfilled} / {english_requests}\n'
+    stats_text += f'<b>Non-Eng. Requests</b> : {non_english_fulfilled} / {non_english_requests}\n\n'
+    stats_text += f'<b>Total Requests Fulfilled</b> : {all_requests_fulfilled} / {all_requests}'
 
     await message.reply_text(
         text=stats_text,

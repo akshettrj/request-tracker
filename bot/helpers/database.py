@@ -1,3 +1,4 @@
+from typing import Tuple
 import psycopg2
 from datetime import datetime
 
@@ -70,13 +71,134 @@ class Database:
         return usr_id
 
 
-    def get_user_requests(self, user_id: int):
+    def get_user_last_request(self, user_id: int):
+
         cur = self.connection.cursor()
         cur.execute(
             "SELECT " +
                 "user_id, is_english, message_id, req_time," +
                 "fulfill_message_id, fulfill_time " +
-            "FROM requests WHERE user_id = %s;",
+            "FROM requests WHERE user_id = %s " +
+            "ORDER BY " +
+            "   message_id DESC " +
+            "LIMIT 1;",
+            [user_id]
+        )
+
+        ( usr_id, is_english, msg_id,
+        req_time, fulfill_message_id, fulfill_time ) = next(cur, (None, None, None, None, None, None))
+
+        last_request = {
+            'user_id': usr_id,
+            'is_english': is_english,
+            'message_id': msg_id,
+            'req_time': req_time,
+            'fulfill_message_id': fulfill_message_id,
+            'fulfill_time': fulfill_time
+        }
+
+        cur.close()
+
+        return last_request
+
+
+    def get_user_stats(self, user_id: int) -> Tuple[int, int, int, int]:
+
+        cur = self.connection.cursor()
+
+        cur.execute(
+            "WITH new_table AS (" +
+            "   SELECT " +
+            "       is_english," +
+            "       (fulfill_time IS NOT NULL) AS is_fulfilled " +
+            "   FROM requests WHERE user_id = %s" +
+            ") "
+            "SELECT " +
+                "is_fulfilled, is_english, COUNT(is_english) AS cnt " +
+            "FROM new_table " +
+            "GROUP BY is_english, is_fulfilled;",
+            [user_id]
+        )
+
+        ( english_fulfilled, non_english_fulfilled,
+        english_not_fulfilled, non_english_not_fulfilled ) = 0, 0, 0, 0
+
+        while True:
+
+            (is_fulfilled, is_english, req_count) = next(cur, (None, None, None))
+            if is_fulfilled is None or is_english is None or req_count is None:
+                break
+
+            if is_fulfilled:
+                if is_english:
+                    english_fulfilled = req_count
+                else:
+                    non_english_fulfilled = req_count
+            else:
+                if is_english:
+                    english_not_fulfilled = req_count
+                else:
+                    non_english_not_fulfilled = req_count
+
+        cur.close()
+
+        return ( english_fulfilled, non_english_fulfilled,
+        english_not_fulfilled, non_english_not_fulfilled )
+
+
+    def get_global_stats(self) -> Tuple[int, int, int, int]:
+
+        cur = self.connection.cursor()
+
+        cur.execute(
+            "WITH new_table AS (" +
+            "   SELECT " +
+            "       is_english," +
+            "       (fulfill_time IS NOT NULL) AS is_fulfilled " +
+            "   FROM requests" +
+            ") "
+            "SELECT " +
+                "is_fulfilled, is_english, COUNT(is_english) AS cnt " +
+            "FROM new_table " +
+            "GROUP BY is_english, is_fulfilled;"
+        )
+
+        ( english_fulfilled, non_english_fulfilled,
+        english_not_fulfilled, non_english_not_fulfilled ) = 0, 0, 0, 0
+
+        while True:
+
+            (is_fulfilled, is_english, req_count) = next(cur, (None, None, None))
+            if is_fulfilled is None or is_english is None or req_count is None:
+                break
+
+            if is_fulfilled:
+                if is_english:
+                    english_fulfilled = req_count
+                else:
+                    non_english_fulfilled = req_count
+            else:
+                if is_english:
+                    english_not_fulfilled = req_count
+                else:
+                    non_english_not_fulfilled = req_count
+
+        cur.close()
+
+        return ( english_fulfilled, non_english_fulfilled,
+        english_not_fulfilled, non_english_not_fulfilled )
+
+
+    def get_user_requests(self, user_id: int):
+
+        cur = self.connection.cursor()
+        cur.execute(
+            "SELECT " +
+                "user_id, is_english, message_id, req_time," +
+                "fulfill_message_id, fulfill_time " +
+            "FROM requests WHERE user_id = %s " +
+            "ORDER BY" +
+            "   message_id ASC;",
             [user_id]
         )
         user_requests = []
@@ -90,17 +212,19 @@ class Database:
             req_time, fulfill_message_id, fulfill_time ))
 
         cur.close()
+
         user_requests = [
-                            {
-                                'user_id': req[0],
-                                'is_english': req[1],
-                                'message_id': req[2],
-                                'req_time': req[3],
-                                'fulfill_message_id': req[4],
-                                'fulfill_time': req[5]
-                            }
-                            for req in user_requests
-                        ]
+            {
+                'user_id': req[0],
+                'is_english': req[1],
+                'message_id': req[2],
+                'req_time': req[3],
+                'fulfill_message_id': req[4],
+                'fulfill_time': req[5]
+            }
+            for req in user_requests
+        ]
+
         return user_requests
 
 
