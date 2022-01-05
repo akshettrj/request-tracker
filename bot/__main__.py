@@ -561,17 +561,17 @@ async def help_message(client: Client, message: Message):
     if body is None:
         return
 
-    help_message = "<u>Commands:</u>\n" +\
-                "- <code>/start</code> : Get confirmation that bot is up (SUDO + ADMINS)\n" +\
-                "- <code>/requests</code> : Get user requests stats. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
-                "- <code>/stats</code> : Get global request stats (SUDO + ADMINS)\n" +\
-                "- <code>/pending</code> : Get current pending requests (SUDO + ADMINS)\n" +\
-                "- <code>/lastfilled</code> : Get the latest fulfilled request (SUDO + ADMINS)\n" +\
-                "- <code>/limits</code> : Get current request limits (SUDO + ADMINS)\n" +\
-                "- <code>/done</code> : Manually mark a request as completed incase the media is not replied to request (SUDO + ADMINS)\n" +\
-                "- <code>/dellastreq</code> : Delete the latest registered request of a user. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
-                "- <code>/delreq</code> : Delete request based on message id. Pass in message_id or reply to request message (SUDO + ADMINS)\n" +\
-                "- <code>/dropdb</code> : Delete the whole database ⚠️ (SUDO + OWNER)\n"
+    help_message = "<u>Commands:</u>\n\n" +\
+                "- <code>/start</code> : Get confirmation that bot is up (SUDO + ADMINS)\n\n" +\
+                "- <code>/requests</code> : Get user requests stats. Pass in user ID or reply to user's message (SUDO + ADMINS)\n\n" +\
+                "- <code>/stats</code> : Get global request stats (SUDO + ADMINS)\n\n" +\
+                "- <code>/pending</code> : Get current pending requests (SUDO + ADMINS)\n\n" +\
+                "- <code>/lastfilled</code> : Get the latest fulfilled request (SUDO + ADMINS)\n\n" +\
+                "- <code>/limits</code> : Get current request limits (SUDO + ADMINS)\n\n" +\
+                "- <code>/done</code> : Manually mark a request as completed incase the media is not replied to request (SUDO + ADMINS)\n\n" +\
+                "- <code>/dellastreq</code> : Delete the latest registered request of a user. Pass in user ID or reply to user's message (SUDO + ADMINS)\n\n" +\
+                "- <code>/delreq</code> : Delete request based on message id. Pass in message_id or reply to request message (SUDO + ADMINS)\n\n" +\
+                "- <code>/dropdb</code> : Delete the whole database ⚠️ (SUDO + OWNER)\n\n"
 
     await message.reply_text(
         text=help_message,
