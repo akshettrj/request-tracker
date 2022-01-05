@@ -562,15 +562,16 @@ async def help_message(client: Client, message: Message):
         return
 
     help_message = "<u>Commands:</u>\n" +\
-                "- /start : Get confirmation that bot is up (SUDO + ADMINS)\n" +\
-                "- /requests : Get user requests stats. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
-                "- /stats : Get global request stats (SUDO + ADMINS)\n" +\
-                "- /pending : Get current pending requests (SUDO + ADMINS)\n" +\
-                "- /limits : Get current request limits (SUDO + ADMINS)\n" +\
-                "- /done : Manually mark a request as completed incase the media is not replied to request (SUDO + ADMINS)\n" +\
-                "- /dellastreq : Delete the latest registered request of a user. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
-                "- /delreq : Delete request based on message id. Pass in message_id or reply to request message (SUDO + ADMINS)\n" +\
-                "- /dropdb : Delete the whole database ⚠️ (SUDO + OWNER)\n"
+                "- <code>/start</code> : Get confirmation that bot is up (SUDO + ADMINS)\n" +\
+                "- <code>/requests</code> : Get user requests stats. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
+                "- <code>/stats</code> : Get global request stats (SUDO + ADMINS)\n" +\
+                "- <code>/pending</code> : Get current pending requests (SUDO + ADMINS)\n" +\
+                "- <code>/lastfilled</code> : Get the latest fulfilled request (SUDO + ADMINS)\n" +\
+                "- <code>/limits</code> : Get current request limits (SUDO + ADMINS)\n" +\
+                "- <code>/done</code> : Manually mark a request as completed incase the media is not replied to request (SUDO + ADMINS)\n" +\
+                "- <code>/dellastreq</code> : Delete the latest registered request of a user. Pass in user ID or reply to user's message (SUDO + ADMINS)\n" +\
+                "- <code>/delreq</code> : Delete request based on message id. Pass in message_id or reply to request message (SUDO + ADMINS)\n" +\
+                "- <code>/dropdb</code> : Delete the whole database ⚠️ (SUDO + OWNER)\n"
 
     await message.reply_text(
         text=help_message,
