@@ -4,7 +4,7 @@
     "keywords": [
         "telegram"
     ],
-    "repository": "https://github.com/Propheci/ruko-zara-sabar-karo",
+    "repository": "https://github.com/Propheci/request-tracker",
     "env": {
         "API_ID": {
             "description": "Get it from my.telegram.org",
