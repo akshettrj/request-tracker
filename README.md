@@ -1,6 +1,6 @@
 # Request Tracker
 
-Track requests for Audiobooks in your Telegram Group
+Track and get stats for Audiobooks requests in your Telegram Group
 
 ## Configuration
 
