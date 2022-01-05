@@ -185,6 +185,13 @@ DONE_COMMAND_FILTER = (
             filters.command('done')
         )
 
+NOT_DONE_COMMAND_FILTER = (
+            (_COMMAND_CHATS_FILTER) &
+            ~filters.edited &
+            filters.text &
+            filters.command('notdone')
+        )
+
 START_COMMAND_FILTER = (
             (_COMMAND_CHATS_FILTER) &
             ~filters.edited &

@@ -1,6 +1,6 @@
 from datetime import datetime
 from pyrogram.types.user_and_chats.chat_member import ChatMember
-from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DEL_REQUEST_COMMAND_FILTER, DONE_COMMAND_FILTER, EZBOOKBOT_ID, GROUP_NAME, HELP_COMMAND_FILTER, LAST_FILLED_COMMAND_FILTER, PENDING_COMMAND_FILTER,
+from bot import ( BOT_TOKEN, CLEAR_LAST_REQUEST_COMMAND_FILTER, DEL_REQUEST_COMMAND_FILTER, DONE_COMMAND_FILTER, EZBOOKBOT_ID, GROUP_NAME, HELP_COMMAND_FILTER, LAST_FILLED_COMMAND_FILTER, NOT_DONE_COMMAND_FILTER, PENDING_COMMAND_FILTER,
         SESSION_STRING, LIMITS_COMMAND_FILTER, REQ_TIMES, REQUEST_FILTER,
         GROUP_ID, API_HASH, API_ID, DATABASE_URL, START_COMMAND_FILTER,
         REQUESTS_COMMAND_FILTER, STATS_COMMAND_FILTER, DROP_DB_COMMAND_FILTER, FULFILL_FILTER, SUDO_USERS, logger )
@@ -488,6 +488,56 @@ async def mark_request_done(client: Client, message: Message):
     )
 
 
+@app.on_message(filters=NOT_DONE_COMMAND_FILTER, group=20)
+async def mark_request_not_done(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        return
+
+    if message.chat.id == GROUP_ID and user.id not in SUDO_USERS:
+        membership: ChatMember = await client.get_chat_member(chat_id=GROUP_ID, user_id=user.id)
+        if membership.status not in ['administrator', 'creator']:
+            return
+
+    body = message.text
+    if body is None:
+        return
+
+    replied_to = message.reply_to_message
+    if (replied_to is None) or (not is_a_request(replied_to)):
+        await message.reply(
+            text="Please reply to a request message",
+            quote=True
+        )
+        return
+
+    target_user = replied_to.from_user
+    if target_user is None:
+        await message.reply(
+            text="Couldn't find any user in the replied message :panick:",
+            quote=True
+        )
+        return
+
+    user_id = db.get_user(target_user.id)
+    if user_id is None:
+        db.add_user(target_user.id)
+    user_id = target_user.id
+
+    is_english = is_english_request(replied_to)
+    if db.get_request(user_id, replied_to.message_id)[0] is None:
+        db.register_request(user_id, is_english, replied_to.message_id)
+
+    db.mark_request_not_done(user_id, replied_to.message_id)
+
+    group_id = int(str(GROUP_ID)[4:])
+    await message.reply_text(
+        text=f"{html_message_link(group_id, replied_to.message_id, 'Request')} marked as pending\n",
+        quote=True
+    )
+
+
 @app.on_message(filters=PENDING_COMMAND_FILTER, group=10)
 async def get_pending_requests(client: Client, message: Message):
 
@@ -569,6 +619,7 @@ async def help_message(client: Client, message: Message):
                 "- <code>/lastfilled</code> : Get the latest fulfilled request (SUDO + ADMINS)\n\n" +\
                 "- <code>/limits</code> : Get current request limits (SUDO + ADMINS)\n\n" +\
                 "- <code>/done</code> : Manually mark a request as completed incase the media is not replied to request (SUDO + ADMINS)\n\n" +\
+                "- <code>/notdone</code> : Manually mark a request as pending incase ezbookbot sends wrong file (SUDO + ADMINS)\n\n" +\
                 "- <code>/dellastreq</code> : Delete the latest registered request of a user. Pass in user ID or reply to user's message (SUDO + ADMINS)\n\n" +\
                 "- <code>/delreq</code> : Delete request based on message id. Pass in message_id or reply to request message (SUDO + ADMINS)\n\n" +\
                 "- <code>/dropdb</code> : Delete the whole database ⚠️ (SUDO + OWNER)\n\n"

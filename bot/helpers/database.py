@@ -376,6 +376,19 @@ class Database:
         cur.close()
 
 
+    def mark_request_not_done(self, user_id: int, message_id: int):
+
+        cur = self.connection.cursor()
+        cur.execute(
+            "UPDATE requests " +
+            "SET fulfill_message_id = NULL, fulfill_time = NULL " +
+            "WHERE (user_id = %s AND message_id = %s);",
+            [user_id, message_id]
+        )
+        self.connection.commit()
+        cur.close()
+
+
     def register_request_fulfillment(self, user_id: int, message_id: int, fulfill_id: int):
         cur = self.connection.cursor()
         cur.execute(

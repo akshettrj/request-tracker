@@ -45,6 +45,7 @@ Track and get stats for Audiobooks requests in your Telegram Group
 | `/lastfilled`       | Get the latest fulfilled request                                                                 | SUDO + ADMINS |
 | `/limits`           | Get current request limits                                                                       | SUDO + ADMINS |
 | `/done`             | Manually mark a request as completed incase the media is not replied to request                  | SUDO + ADMINS |
+| `/notdone`          | Manually mark a request as pending incase ezbootbot sends wrong file                             | SUDO + ADMINS |
 | `/dellastreq`       | Delete the latest registered request of a user. Pass in user ID or reply to user's message       | SUDO + ADMINS |
 | `/delreq`           | Delete request based on message id. Pass in message_id or reply to request message               | SUDO + ADMINS |
 | `/dropdb`           | Delete the whole database ⚠️                                                                      | SUDO + OWNER  |
