@@ -67,8 +67,8 @@ if len(SUDO_USERS) == 0:
 
 _req_time_regex = re.compile(r'^(\d+)(min|d|s)$')
 
-ENG_REQ_TIME = os.environ.get('ENG_REQ_TIME', '7d').strip()
-NON_ENG_REQ_TIME = os.environ.get('NON_ENG_REQ_TIME', '14d').strip()
+ENG_REQ_TIME = os.environ.get('ENG_REQ_TIME', '8d').strip()
+NON_ENG_REQ_TIME = os.environ.get('NON_ENG_REQ_TIME', '15d').strip()
 
 _eng_req_time = _req_time_regex.fullmatch(ENG_REQ_TIME)
 if (_eng_req_time is None) or (len(_eng_req_time.groups()) != 2):

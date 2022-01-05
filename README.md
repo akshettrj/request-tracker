@@ -22,8 +22,8 @@ Track requests for Audiobooks in your Telegram Group
 | `GROUP_NAME`        | Name of the group (will be used in stats messages)                                               | -                    |
 | `EZBOOKBOT_ID`      | ID of the EzBook Bot (which will fulfill requests, will be useful only when using SESSION_STRING | "1699727751"         |
 | `DATABASE_URL`      | URL for connecting with PostgreSQL database.                                                     | -                    |
-| `ENG_REQ_TIME`      | See information below                                                                            | "7d"                 |
-| `NON_ENG_REQ_TIME`  | See information below                                                                            | "14d"                |
+| `ENG_REQ_TIME`      | See information below                                                                            | "8d"                 |
+| `NON_ENG_REQ_TIME`  | See information below                                                                            | "15d"                |
 | `EXCLUDED_HASHTAGS` | The Hashtags in the request message which will not be considered as a language like #hindi etc.  | "#scribd #storytel"  |
 
 * `ENG_REQ_TIME` and `NON_ENG_REQ_TIME` are the time periods of waiting after getting an English and Non-English audiobook request fulfilled.
