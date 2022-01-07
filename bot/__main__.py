@@ -104,7 +104,7 @@ async def request_handler(client: Client, message: Message):
         return
 
     req_time = REQ_TIMES['eng'] if user_last_request['is_english'] else REQ_TIMES['non_eng']
-    last_req_str = 'last English request' if user_last_request['is_english'] else 'last Non-English request'
+    last_req_str = 'English request' if user_last_request['is_english'] else 'Non-English request'
 
     if user_last_request['fulfill_message_id'] is None:
         if time_gap_not_crossed(cur_time, user_last_request['req_time'], req_time):
@@ -112,7 +112,7 @@ async def request_handler(client: Client, message: Message):
             await client.send_message(
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " +\
-                        f"{html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
+                        f"last {html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
                         f"was less than {req_time['full']} ago and hence the new one is deleted."
             )
             return
@@ -123,8 +123,8 @@ async def request_handler(client: Client, message: Message):
             await client.send_message(
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " + \
-                        f"{html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
-                        f"{html_message_link(group_id, user_last_request['fulfill_message_id'], 'was fulfilled')} " +\
+                        f"last {html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
+                        f"was {html_message_link(group_id, user_last_request['fulfill_message_id'], 'fulfilled')} " +\
                         f"less than {req_time['full']} ago and hence the new one is deleted."
             )
             return
