@@ -1,15 +1,15 @@
-# Request Tracker
+# Rᴇǫᴜᴇsᴛ Tʀᴀᴄᴋᴇʀ
 
 Track and get stats for Audiobooks requests in your Telegram Group
 
-## Configuration
+## Cᴏɴғɪɢᴜʀᴀᴛɪᴏɴ
 
 * There are two ways of configuring the bot:
     1. Use `config.env` by creating a copy of `sample_config.env` and edit the values
     2. Set Environment Variables
 * Don't use both ways at the same time 🥴
 
-### Variables
+### Vᴀʀɪᴀʙʟᴇs
 
 | Name                | Description                                                                                      | Default              |
 | :-----------------: | ------------------------------------------------------------------------------------------------ | :------------------: |
@@ -34,7 +34,7 @@ Track and get stats for Audiobooks requests in your Telegram Group
 * At one time, only one unit can be used i.e. you can have values like `7d`, `4min`, `10s` but not values like `7d 10min`
 * Example: If you set `ENG_REQ_TIME` to `1d`, then the user can request a new Audiobook the next day after requesting or fulfillment of last request.
 
-## Available Commands
+## Aᴠᴀɪʟᴀʙʟᴇ Cᴏᴍᴍᴀɴᴅs
 
 | Command             | Description                                                                                      | Permissions   |
 | :-----------------: | ------------------------------------------------------------------------------------------------ | :---------:   |
@@ -51,7 +51,7 @@ Track and get stats for Audiobooks requests in your Telegram Group
 | `/dropdb`           | Delete the whole database ⚠️                                                                      | SUDO + OWNER  |
 
 
-## Project Structure
+## Pʀᴏᴊᴇᴄᴛ Sᴛʀᴜᴄᴛᴜʀᴇ
 
 ```
 .
