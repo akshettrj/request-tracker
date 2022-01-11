@@ -11,7 +11,7 @@ Track and get stats for Audiobooks requests in your Telegram Group
 
 ### Vᴀʀɪᴀʙʟᴇs
 
-| Name                | Description                                                                                      | Default              |
+| Nᴀᴍᴇ                | Dᴇsᴄʀɪᴘᴛɪᴏɴ                                                                                      | Dᴇғᴀᴜʟᴛ              |
 | :-----------------: | ------------------------------------------------------------------------------------------------ | :------------------: |
 | `API_ID`            | Get from my.telegram.org                                                                         | -                    |
 | `API_HASH`          | Get from my.telegram.org                                                                         | -                    |
@@ -36,19 +36,19 @@ Track and get stats for Audiobooks requests in your Telegram Group
 
 ## Aᴠᴀɪʟᴀʙʟᴇ Cᴏᴍᴍᴀɴᴅs
 
-| Command             | Description                                                                                      | Permissions   |
+| Cᴏᴍᴍᴀɴᴅ             | Dᴇsᴄʀɪᴘᴛɪᴏɴ                                                                                      | Pᴇʀᴍɪssɪᴏɴs   |
 | :-----------------: | ------------------------------------------------------------------------------------------------ | :---------:   |
-| `/start`            | Get confirmation that bot is up                                                                  | SUDO + ADMINS |
-| `/requests`         | Get user requests stats. Pass in user ID or reply to user's message                              | SUDO + ADMINS |
-| `/stats`            | Get global request stats                                                                         | SUDO + ADMINS |
-| `/pending`          | Get current pending requests                                                                     | SUDO + ADMINS |
-| `/lastfilled`       | Get the latest fulfilled request                                                                 | SUDO + ADMINS |
-| `/limits`           | Get current request limits                                                                       | SUDO + ADMINS |
-| `/done`             | Manually mark a request as completed incase the media is not replied to request                  | SUDO + ADMINS |
-| `/notdone`          | Manually mark a request as pending incase ezbootbot sends wrong file                             | SUDO + ADMINS |
-| `/dellastreq`       | Delete the latest registered request of a user. Pass in user ID or reply to user's message       | SUDO + ADMINS |
-| `/delreq`           | Delete request based on message id. Pass in message_id or reply to request message               | SUDO + ADMINS |
-| `/dropdb`           | Delete the whole database ⚠️                                                                      | SUDO + OWNER  |
+| `/start`            | Get confirmation that bot is up                                                                  | Sᴜᴅᴏ + Aᴅᴍɪɴs |
+| `/requests`         | Get user requests stats. Pass in user ID or reply to user's message                              | Sᴜᴅᴏ + Aᴅᴍɪɴs |
+| `/stats`            | Get global request stats                                                                         | Sᴜᴅᴏ + Aᴅᴍɪɴs |
+| `/pending`          | Get current pending requests                                                                     | Sᴜᴅᴏ + Aᴅᴍɪɴs |
+| `/lastfilled`       | Get the latest fulfilled request                                                                 | Sᴜᴅᴏ + Aᴅᴍɪɴs |
+| `/limits`           | Get current request limits                                                                       | Sᴜᴅᴏ + Aᴅᴍɪɴs |
+| `/done`             | Manually mark a request as completed incase the media is not replied to request                  | Sᴜᴅᴏ + Aᴅᴍɪɴs |
+| `/notdone`          | Manually mark a request as pending incase ezbootbot sends wrong file                             | Sᴜᴅᴏ + Aᴅᴍɪɴs |
+| `/dellastreq`       | Delete the latest registered request of a user. Pass in user ID or reply to user's message       | Sᴜᴅᴏ + Aᴅᴍɪɴs |
+| `/delreq`           | Delete request based on message id. Pass in message_id or reply to request message               | Sᴜᴅᴏ + Aᴅᴍɪɴs |
+| `/dropdb`           | Delete the whole database ⚠️                                                                      | Sᴜᴅᴏ + Oᴡɴᴇʀ  |
 
 
 ## Pʀᴏᴊᴇᴄᴛ Sᴛʀᴜᴄᴛᴜʀᴇ
