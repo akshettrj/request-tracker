@@ -178,6 +178,7 @@ async def leaderboard_cmd(client: Client, message: Message):
 
     results = DB.get_leaderboard()
     results = sorted(results)
+    results.reverse()
 
     leaderboard_text = "🎧 Top Contributor of Group name\n\n"
 
@@ -187,9 +188,9 @@ async def leaderboard_cmd(client: Client, message: Message):
         target_user = None
         try:
             target_user = await client.get_chat_member(GROUP_ID, user_id)
-        except Exception as _:
+        except Exception as ex:
             await message.reply_text(
-                text=f"Could not retrieve user with ID {user_id}",
+                text=f"Could not retrieve user with ID {user_id}\n\nError:\n<code>{ex}</code>",
                 quote=True
             )
             leaderboard_text += f"{pos+1}) [id:{user_id}] ({fulfill_count} filled)\n"
