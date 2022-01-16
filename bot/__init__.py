@@ -1,11 +1,12 @@
 import os
 import re
-from pyrogram import filters
 from dotenv import load_dotenv
 
 import logging
 
 from pyrogram.types.messages_and_media.message import Message
+
+from bot.helpers.database import Database
 
 logging.basicConfig(
         format='[%(levelname)s] (%(asctime)s) %(message)s'
@@ -105,137 +106,16 @@ elif REQ_TIMES['non_eng']['type'] == 's':
 EXCLUDED_HASHTAGS = os.environ.get('EXCLUDED_HASHTAGS', '#scribd #storytel').strip().split()
 EXCLUDED_HASHTAGS = set([hashtag.lower() for hashtag in EXCLUDED_HASHTAGS])
 
-# '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-async def check_sudo_or_group(_, __, update: Message):
-
-    if update.from_user is None:
-        return False
-
-    if update.from_user.id in SUDO_USERS:
-        return True
-
-    if update.chat is None:
-        return False
-
-    if update.chat.id == GROUP_ID:
-        return True
-
-    return False
-
-async def ez_book_bot_message(_, __, update: Message):
-
-    user = update.from_user
-    if user is None:
-        return False
-
-    if user.id == EZBOOKBOT_ID:
-        return True
-
-    return False
-
-_EZBOOK_BOT_FILTER = filters.create(ez_book_bot_message)
-
-_COMMAND_CHATS_FILTER = filters.create(check_sudo_or_group)
-
-
-FULFILL_FILTER = (
-            filters.chat(GROUP_ID) &
-            (filters.audio | filters.document | filters.voice | _EZBOOK_BOT_FILTER)
-        )
-
-REQUEST_FILTER = (
-            ~filters.edited &
-            filters.chat(GROUP_ID) &
-            filters.text
-        )
-
-REQUESTS_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('requests')
-        )
-
-STATS_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('stats')
-        )
-
-CLEAR_LAST_REQUEST_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('dellastreq')
-        )
-
-DEL_REQUEST_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('delreq')
-        )
-
-DONE_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('done')
-        )
-
-NOT_DONE_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('notdone')
-        )
-
-START_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('start')
-        )
-
-LIMITS_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('limits')
-        )
-
-PENDING_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('pending')
-        )
-
-LAST_FILLED_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('lastfilled')
-        )
-
-DROP_DB_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('dropdb')
-        )
-
-HELP_COMMAND_FILTER = (
-            (_COMMAND_CHATS_FILTER) &
-            ~filters.edited &
-            filters.text &
-            filters.command('help')
-        )
-
-# '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 if DATABASE_URL == '':
     _missing_env_var('DATABASE_URL')
+
+COMMAND_PREFIXES = ["/", "!"]
+
+DB = Database(DATABASE_URL)
+
+HELP_DATA = [
+    ["help", "Get this help message", ["SUDO", "ADMINS"]],
+    ["start", "Get confirmation that the bot is up", ["SUDO", "ADMINS"]],
+]
