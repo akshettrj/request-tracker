@@ -207,6 +207,7 @@ async def formfulfilled_cmd(client: Client, message: Message):
                                     chat_id=GROUP_ID,
                                     message_ids=request['fulfill_message_id']
                                 )
+            print(fulfill_message)
         except:
             fulfill_message = None
 
@@ -215,8 +216,12 @@ async def formfulfilled_cmd(client: Client, message: Message):
             continue
 
         fulfiller = fulfill_message.from_user
+        if fulfiller is None:
+            errors_message += f"{html_message_link(group_id, request['fulfill_message_id'], 'nfmsg')} - {html_message_link(group_id, request['message_id'], 'Request')} - unf\n"
+            continue
+
         DB.update_fulfilled_by(fulfill_message.message_id, fulfiller.id)
-        success_message += f"{html_message_link(group_id, request['message_id'], 'Request')} - {html_message_link(group_id, request['fulfill_message_id'], 'fulfilled')} - {fulfiller.mention(fulfiller.first_name + fulfiller.last_name)}\n"
+        success_message += f"{html_message_link(group_id, request['message_id'], 'Request')} - {html_message_link(group_id, request['fulfill_message_id'], 'fulfilled')} - {fulfiller.mention(fulfiller.first_name)}\n"
 
     await message.reply_text(
         text=errors_message,
