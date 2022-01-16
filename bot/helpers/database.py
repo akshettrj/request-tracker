@@ -586,3 +586,27 @@ class Database:
         finally:
             self.connection.commit()
             cur.close()
+
+
+    def get_leaderboard(self):
+
+        cur = self.connection.cursor()
+        try:
+            cur.execute(
+                "SELECT COUNT(message_id) AS count, fulfilled_by " +
+                "FROM requests " +
+                "WHERE fulfilled_by IS NOT NULL " +
+                "GROUP BY fulfilled_by " +
+                "ORDER BY count DESC;"
+            )
+            result = cur.fetchall()
+
+        except Exception as ex:
+            self.connection.rollback()
+            raise ex
+
+        finally:
+            self.connection.commit()
+            cur.close()
+
+        return result

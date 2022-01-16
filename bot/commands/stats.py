@@ -164,3 +164,42 @@ async def stats_cmd(client: Client, message: Message):
     )
 
     raise ContinuePropagation
+
+
+@app.on_message(filters=CustomFilters.leaderboard_cmd_filter)
+async def leaderboard_cmd(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        raise ContinuePropagation
+
+    if (not await is_sudo_user(user)) and (not await is_admin(client, user)):
+        raise ContinuePropagation
+
+    results = DB.get_leaderboard()
+    results = sorted(results)
+
+    leaderboard_text = "🎧 Top Contributor of Group name\n\n"
+
+    for pos, result in enumerate(results):
+
+        fulfill_count, user_id = result
+        target_user = None
+        try:
+            target_user = await client.get_chat_member(GROUP_ID, user_id)
+        except Exception as _:
+            await message.reply_text(
+                text=f"Could not retrieve user with ID {user_id}",
+                quote=True
+            )
+            leaderboard_text += f"{pos+1}) [id:{user_id}] ({fulfill_count} filled)\n"
+            continue
+
+        target_user = target_user.user
+
+        leaderboard_text += f"{pos+1}) {target_user.first_name} [{target_user.username or '-'}] ({fulfill_count} filled)\n"
+
+    await message.reply_text(
+        text=leaderboard_text,
+        quote=True
+    )

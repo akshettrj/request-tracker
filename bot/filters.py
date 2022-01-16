@@ -126,3 +126,9 @@ class CustomFilters:
         & (_sudo_user_filter | _main_group_filter)
         & filters.command("formfulfilled", COMMAND_PREFIXES)
     )
+
+    leaderboard_cmd_filter = (
+        ~filters.edited
+        & (_sudo_user_filter | _main_group_filter)
+        & filters.command("leaderboard", COMMAND_PREFIXES)
+    )
