@@ -166,7 +166,7 @@ async def stats_cmd(client: Client, message: Message):
     stats_text += f'<b>Total Requests Fulfilled</b> : {all_requests_fulfilled} / {all_requests}\n\n'
     if oldest_req_time is not None:
         stats_text += f'<b>Fulfill Rate</b> : {fulfill_rate} %\n'
-        stats_text += f'<b>Avg Req/day</b> : {all_requests / total_days} req/day'
+        stats_text += f'<b>Avg Req/day</b> : {round(all_requests / total_days, 2)} req/day'
 
     await message.reply_text(
         text=stats_text,
