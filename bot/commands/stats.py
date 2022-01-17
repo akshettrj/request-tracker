@@ -140,11 +140,14 @@ async def stats_cmd(client: Client, message: Message):
     all_requests = english_requests + non_english_requests
 
     start_date = None
+    total_days = 1
     oldest_req_time = DB.get_oldest_request_time()
     if oldest_req_time is not None:
         start_date = oldest_req_time[0].date()
         curr_time = datetime.now().date()
         total_days = (curr_time-start_date).days
+        if total_days == 0:
+            total_days = 1
 
     try:
         group_name = await get_main_group_name(client)
@@ -155,12 +158,15 @@ async def stats_cmd(client: Client, message: Message):
         )
         raise ContinuePropagation
 
+    fulfill_rate = round((all_requests_fulfilled * 100) / all_requests, 2)
+
     stats_text = f'<b>Stats for {group_name} {f"since {format_date(start_date)}" if start_date is not None else ""}</b>\n\n'
     stats_text += f'<b>Eng. Requests</b> : {english_fulfilled} / {english_requests}\n'
     stats_text += f'<b>Non-Eng. Requests</b> : {non_english_fulfilled} / {non_english_requests}\n\n'
-    stats_text += f'<b>Total Requests Fulfilled</b> : {all_requests_fulfilled} / {all_requests}\n'
+    stats_text += f'<b>Total Requests Fulfilled</b> : {all_requests_fulfilled} / {all_requests}\n\n'
     if oldest_req_time is not None:
-        stats_text += f'<b>Avg. Fulfill Rate</b> : {all_requests_fulfilled/total_days}'
+        stats_text += f'<b>Fulfill Rate</b> : {fulfill_rate} %\n'
+        stats_text += f'<b>Avg Req/day</b> : {all_requests / total_days} req/day'
 
     await message.reply_text(
         text=stats_text,
