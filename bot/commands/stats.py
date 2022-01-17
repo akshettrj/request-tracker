@@ -14,6 +14,7 @@ from bot.helpers.utils import (
 )
 
 
+HELP_DATA += [["leaderboard", "Get the current requests fulfillment leaderboard", ["SUDO", "ADMIN"]]]
 HELP_DATA += [["limits", "Get the current request limits configured in the bot", ["SUDO", "ADMIN"]]]
 HELP_DATA += [["requests", "Get the total number of requests made by a person. Pass in User ID or reply to a message", ["SUDO", "ADMIN"]]]
 HELP_DATA += [["stats", "Get the requests stats for the group", ["SUDO", "ADMIN"]]]
@@ -200,12 +201,12 @@ async def leaderboard_cmd(client: Client, message: Message):
         user_details = NAME_CACHE[user_id] if user_id in NAME_CACHE.keys() else None
 
         if user_details is None:
-            leaderboard_text += f"{pos+1}) [id:{user_id}] ({fulfill_count} filled)\n"
+            leaderboard_text += f"{pos+1}) <b>[id:{user_id}]</b> ({fulfill_count} filled)\n"
             continue
 
         name, username = user_details['name'], user_details['user_name']
 
-        leaderboard_text += f"{pos+1}) {name} [{username if username != '' else '-'}] ({fulfill_count} filled)\n"
+        leaderboard_text += f"{pos+1}) <b>{name}</b> [<i>{username if username != '' else '-'}</i>] ({fulfill_count} filled)\n"
 
     await message.reply_text(
         text=leaderboard_text,
