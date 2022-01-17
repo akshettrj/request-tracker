@@ -4,8 +4,6 @@ from dotenv import load_dotenv
 
 import logging
 
-from pyrogram.types.messages_and_media.message import Message
-
 from bot.helpers.database import Database
 
 logging.basicConfig(
@@ -114,6 +112,8 @@ if DATABASE_URL == '':
 COMMAND_PREFIXES = ["/", "!"]
 
 DB = Database(DATABASE_URL)
+
+NAME_CACHE = DB.get_users()
 
 HELP_DATA = [
     ["help", "Get this help message", ["SUDO", "ADMINS"]],

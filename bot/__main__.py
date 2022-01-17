@@ -5,7 +5,7 @@ from pyrogram.types import Message
 
 from bot.client import app
 from bot import (
-    DB, GROUP_ID, HELP_DATA, EZBOOKBOT_ID, REQ_TIMES
+    DB, GROUP_ID, HELP_DATA, EZBOOKBOT_ID, NAME_CACHE, REQ_TIMES
 )
 from bot.filters import CustomFilters
 from bot.helpers.utils import (
@@ -13,6 +13,8 @@ from bot.helpers.utils import (
     is_a_request, is_english_request, html_message_link,
     time_gap_not_crossed, sort_help_data
 )
+
+# don't remove this line, these are modules for the bot
 from bot.commands import stats, database, utils
 
 
@@ -35,7 +37,8 @@ async def request_fulfill_handler(_: Client, message: Message):
     user_data = DB.get_user(user_id)
 
     if user_data is None:
-        DB.add_user(user_id)
+        user_name = f"{replied_to.from_user.first_name} {replied_to.from_user.last_name or ''}".strip()
+        DB.add_user(user_id, user_name, replied_to.from_user.username or '')
 
     if DB.get_request(user_id, replied_to.message_id)[0] is None:
         DB.register_request(user_id, is_english, replied_to.message_id)
@@ -61,7 +64,8 @@ async def request_handler(client: Client, message: Message):
     is_english = is_english_request(message)
 
     if DB.get_user(user.id) is None:
-        DB.add_user(user.id)
+        user_name = f"{user.first_name} {user.last_name or ''}".strip()
+        DB.add_user(user.id, user_name, user.username or '')
         DB.register_request(user.id, is_english, message.message_id)
         raise ContinuePropagation
 
@@ -127,5 +131,29 @@ async def help_cmd(client: Client, message: Message):
 
     raise ContinuePropagation
 
+
+@app.on_message(filters=CustomFilters.userdetails_updater_filter, group=-1)
+def update_user_details(_: Client, message: Message):
+
+    global NAME_CACHE
+    user = message.from_user
+    if user is None:
+        raise ContinuePropagation
+
+    name = f"{user.first_name} {user.last_name or ''}".strip()
+    username = user.username or ''
+    cached_details = NAME_CACHE[user.id] if user.id in NAME_CACHE.keys() else None
+    user_data = DB.get_user(user.id)
+
+    if user_data is None or cached_details is None:
+        DB.add_user(user.id, name, username)
+        NAME_CACHE[user.id] = {"name": name, "user_name": username}
+        raise ContinuePropagation
+
+    if name != cached_details['name'] or username != cached_details['user_name']:
+        DB.update_user(user.id, name, username)
+        NAME_CACHE[user.id] = {"name": name, "user_name": username}
+
+    raise ContinuePropagation
 
 app.run()

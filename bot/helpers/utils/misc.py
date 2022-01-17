@@ -1,5 +1,5 @@
 from functools import cmp_to_key
-from bot import ( EXCLUDED_HASHTAGS, HELP_DATA )
+from bot import ( EXCLUDED_HASHTAGS, HELP_DATA, NAME_CACHE )
 from pyrogram.types.messages_and_media.message import Message, Str
 
 
@@ -49,3 +49,9 @@ def sort_help_data():
 
     global HELP_DATA
     globals()["HELP_DATA"] = sorted(HELP_DATA, key=cmp_to_key(lambda i1, i2: (i1[0] < i2[0])))
+
+
+def clear_name_cache():
+
+    global NAME_CACHE
+    NAME_CACHE = {}

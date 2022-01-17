@@ -188,7 +188,8 @@ async def done_cmd(client: Client, message: Message):
 
     user_id = DB.get_user(target_user.id)
     if user_id is None:
-        DB.add_user(target_user.id)
+        target_user_name = f"{target_user.first_name} {target_user.last_name or ''}".strip()
+        DB.add_user(target_user.id, target_user_name, target_user.username or '')
     user_id = target_user.id
 
     is_english = is_english_request(replied_to)
@@ -234,7 +235,8 @@ async def notdone_cmd(client: Client, message: Message):
 
     user_id = DB.get_user(target_user.id)
     if user_id is None:
-        DB.add_user(target_user.id)
+        target_user_name = f"{target_user.first_name} {target_user.last_name or ''}".strip()
+        DB.add_user(target_user.id, target_user_name, target_user.username or '')
     user_id = target_user.id
 
     is_english = is_english_request(replied_to)

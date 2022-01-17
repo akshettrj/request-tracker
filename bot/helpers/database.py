@@ -2,7 +2,6 @@ from typing import Tuple
 import psycopg2
 from datetime import datetime
 
-from pyrogram.types.messages_and_media.message import Str
 
 class Database:
 
@@ -20,7 +19,9 @@ class Database:
         try:
             cur.execute(
                 "CREATE TABLE IF NOT EXISTS users (" +
-                    "user_id                   BIGINT       PRIMARY KEY" +
+                    "user_id        BIGINT       PRIMARY KEY," +
+                    "name           TEXT         DEFAULT NULL," +
+                    "user_name      TEXT         DEFAULT NULL" +
                 ");"
             )
             cur.execute(
@@ -66,13 +67,13 @@ class Database:
             cur.close()
 
 
-    def add_user(self, user_id: int):
+    def add_user(self, user_id: int, name: str, user_name: str):
         cur = self.connection.cursor()
         try:
             cur.execute(
-                "INSERT INTO users (user_id) " +
-                "VALUES (%s);",
-                [user_id]
+                "INSERT INTO users (user_id, name, user_name) " +
+                "VALUES (%s, %s, %s);",
+                [user_id, name, user_name]
             )
 
         except Exception as ex:
@@ -101,6 +102,45 @@ class Database:
             cur.close()
 
         return usr_id
+
+
+    def update_user(self, user_id: int, name: str, username: str):
+        cur = self.connection.cursor()
+        try:
+            cur.execute(
+                "UPDATE users " +
+                "SET name = %s, user_name = %s " +
+                "WHERE (user_id = %s);",
+                [name, username, user_id]
+            )
+
+        except Exception as ex:
+            self.connection.rollback()
+            raise ex
+
+        finally:
+            cur.close()
+
+
+    def get_users(self):
+        cur = self.connection.cursor()
+        try:
+            cur.execute(
+                "SELECT user_id, name, user_name FROM users;"
+            )
+            results = cur.fetchall()
+
+        except Exception as ex:
+            self.connection.rollback()
+            raise ex
+
+        finally:
+            cur.close()
+
+        return {
+            result[0]: {"name": result[1], "user_name": result[2]}
+            for result in results
+        }
 
 
     def get_user_last_request(self, user_id: int):
@@ -487,7 +527,7 @@ class Database:
         try:
             cur.execute(
                 "UPDATE requests " +
-                "SET fulfill_message_id = NULL, fulfill_time = NULL " +
+                "SET fulfill_message_id = NULL, fulfill_time = NULL, fulfilled_by = NULL " +
                 "WHERE (user_id = %s AND message_id = %s);",
                 [user_id, message_id]
             )

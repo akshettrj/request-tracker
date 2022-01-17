@@ -25,6 +25,10 @@ _main_group_filter = filters.chat(GROUP_ID)
 
 class CustomFilters:
 
+    userdetails_updater_filter = (
+        _main_group_filter
+    )
+
     request_filter = (
         ~filters.edited
         & filters.text

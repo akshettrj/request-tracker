@@ -4,7 +4,7 @@ from pyrogram import ContinuePropagation
 from pyrogram.client import Client
 from pyrogram.types.messages_and_media.message import Message
 
-from bot import ( DB, GROUP_ID, REQ_TIMES, HELP_DATA )
+from bot import ( DB, GROUP_ID, NAME_CACHE, REQ_TIMES, HELP_DATA )
 from bot.client import app
 from bot.filters import CustomFilters
 from bot.helpers.utils import (
@@ -180,25 +180,22 @@ async def leaderboard_cmd(client: Client, message: Message):
     results = sorted(results)
     results.reverse()
 
-    leaderboard_text = "🎧 Top Contributor of Group name\n\n"
+    group_name = await get_main_group_name(client)
+
+    leaderboard_text = f"🎧 Top Contributor of {group_name}\n\n"
 
     for pos, result in enumerate(results):
 
         fulfill_count, user_id = result
-        target_user = None
-        try:
-            target_user = await client.get_chat_member(GROUP_ID, user_id)
-        except Exception as ex:
-            await message.reply_text(
-                text=f"Could not retrieve user with ID {user_id}\n\nError:\n<code>{ex}</code>",
-                quote=True
-            )
+        user_details = NAME_CACHE[user_id] if user_id in NAME_CACHE.keys() else None
+
+        if user_details is None:
             leaderboard_text += f"{pos+1}) [id:{user_id}] ({fulfill_count} filled)\n"
             continue
 
-        target_user = target_user.user
+        name, username = user_details['name'], user_details['user_name']
 
-        leaderboard_text += f"{pos+1}) {target_user.first_name} [{target_user.username or '-'}] ({fulfill_count} filled)\n"
+        leaderboard_text += f"{pos+1}) {name} [{username if username != '' else '-'}] ({fulfill_count} filled)\n"
 
     await message.reply_text(
         text=leaderboard_text,
