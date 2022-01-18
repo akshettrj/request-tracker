@@ -661,17 +661,17 @@ class Database:
             for week_num in range(1, 54):
                 cur.execute(
                     "SELECT count(message_id) FROM requests " +
-                    "WHERE TO_CHAR(req_time, 'WW') = '%s';",
-                    [week_num]
+                    f"WHERE TO_CHAR(req_time, 'WW') = '{week_num}';"
                 )
                 requests_count = cur.fetchone()
 
                 cur.execute(
                     "SELECT count(message_id) FROM requests " +
-                    "WHERE TO_CHAR(fulfill_time, 'WW') = '%s';",
-                    [week_num]
+                    f"WHERE TO_CHAR(fulfill_time, 'WW') = '{week_num}';"
                 )
                 fulfill_count = cur.fetchone()
+
+                print(f"Week Number {week_num} - {requests_count} reqs AND {fulfill_count} fulfilled")
 
                 results.append(tuple([requests_count, fulfill_count]))
 
