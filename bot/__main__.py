@@ -16,6 +16,7 @@ from bot.helpers.utils import (
 
 # don't remove this line, these are modules for the bot
 from bot.commands import stats, database, utils
+from bot.helpers.utils.telegram import mute_user
 
 
 @app.on_message(filters=CustomFilters.fulfill_filter)
@@ -87,8 +88,10 @@ async def request_handler(client: Client, message: Message):
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " +\
                         f"last {html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
-                        f"was less than {req_time['full']} ago and hence the new one is deleted."
+                        f"was less than {req_time['full']} ago and hence the new one is deleted." +\
+                        "\n\nMuting you for 12 hours."
             )
+            await mute_user(client, user)
             raise ContinuePropagation
 
     else:
@@ -99,8 +102,10 @@ async def request_handler(client: Client, message: Message):
                 text=f"{user.mention(user.first_name)}, your " + \
                         f"last {html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
                         f"was {html_message_link(group_id, user_last_request['fulfill_message_id'], 'fulfilled')} " +\
-                        f"less than {req_time['full']} ago and hence the new one is deleted."
+                        f"less than {req_time['full']} ago and hence the new one is deleted." +\
+                        "\n\nMuting you for 12 hours."
             )
+            await mute_user(client, user)
             raise ContinuePropagation
 
     DB.register_request(user.id, is_english, message.message_id)

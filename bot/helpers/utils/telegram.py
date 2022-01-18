@@ -1,6 +1,8 @@
+from time import time
 from pyrogram.client import Client
 from pyrogram.types.messages_and_media.message import Message
 from pyrogram.types.user_and_chats.chat_member import ChatMember
+from pyrogram.types.user_and_chats.chat_permissions import ChatPermissions
 from pyrogram.types.user_and_chats.user import User
 
 from bot import ( GROUP_ID, SUDO_USERS )
@@ -49,3 +51,13 @@ def get_message_media(message: Message):
         return None
 
     return doc
+
+
+async def mute_user(client: Client, user: User):
+
+    await client.restrict_chat_member(
+        chat_id=GROUP_ID,
+        user_id=user.id,
+        permissions=ChatPermissions(can_send_messages=False),
+        until_date=int(time() + 12 * 60 * 60)
+    )
