@@ -110,28 +110,31 @@ async def request_handler(client: Client, message: Message):
 
     if not allow_request:
 
-        sleep(1)
+        sleep(2)
 
         # Delete replies from EZBOOK BOT
-        replies = await client.get_messages(
-            chat_id=GROUP_ID,
-            reply_to_message_ids=message.message_id
-        )
-        if isinstance(replies, Message):
-            if replies.from_user and replies.from_user.id == EZBOOKBOT_ID:
-                await replies.delete()
-                await client.send_message(
-                    chat_id=GROUP_ID,
-                    text="⚠️  There was a reply from EZ Book Bot and so user might have got his request fulfilled."
-                )
-        elif isinstance(replies, List):
-            for reply in replies:
-                if reply.from_user and reply.from_user.id == EZBOOKBOT_ID:
-                    await reply.delete()
+        try:
+            replies = await client.get_messages(
+                chat_id=GROUP_ID,
+                reply_to_message_ids=message.message_id
+            )
+            if isinstance(replies, Message):
+                if replies.from_user and replies.from_user.id == EZBOOKBOT_ID:
+                    await replies.delete()
                     await client.send_message(
                         chat_id=GROUP_ID,
                         text="⚠️  There was a reply from EZ Book Bot and so user might have got his request fulfilled."
                     )
+            elif isinstance(replies, List):
+                for reply in replies:
+                    if reply.from_user and reply.from_user.id == EZBOOKBOT_ID:
+                        await reply.delete()
+                        await client.send_message(
+                            chat_id=GROUP_ID,
+                            text="⚠️  There was a reply from EZ Book Bot and so user might have got his request fulfilled."
+                        )
+        except:
+            pass
 
         await mute_user(client, user)
         await message.delete()
