@@ -172,12 +172,16 @@ async def stats_cmd(client: Client, message: Message):
 
     weekly_stats = DB.get_weekly_stats()
     x_label = [f"Week {wn}" for wn in range(1, len(weekly_stats)+1)]
+    x_requests = [i - 0.25 for i in range(1, len(weekly_stats) + 1)]
+    x_fulfilled = [i for i in range(1, len(weekly_stats) + 1)]
+    x_mid = [i - 0.125 for i in range(1, len(weekly_stats) + 1)]
     y_requests = [stat[0] for stat in weekly_stats]
     y_fulfilled = [stat[1] for stat in weekly_stats]
 
-    plt.bar(x_label, y_requests, color="yellow", label="Requests")
-    plt.bar(x_label, y_fulfilled, color="green", label="Fulfilled")
+    plt.bar(x_requests, y_requests, color="yellow", label="Requests", width=0.25)
+    plt.bar(x_fulfilled, y_fulfilled, color="green", label="Fulfilled", width=0.25)
     plt.title(f"Weekly Stats for {group_name}")
+    plt.xticks(x_mid, x_label)
     plt.legend()
     plt.savefig("./weekly_stats.png")
 
