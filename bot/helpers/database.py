@@ -650,3 +650,37 @@ class Database:
             cur.close()
 
         return result
+
+
+    def get_weekly_stats(self):
+
+        cur = self.connection.cursor()
+        results = []
+        try:
+
+            for week_num in range(1, 54):
+                cur.execute(
+                    "SELECT count(message_id) FROM requests " +
+                    "WHERE TO_CHAR(req_time, 'WW') = '%s';",
+                    [week_num]
+                )
+                requests_count = cur.fetchone()
+
+                cur.execute(
+                    "SELECT count(message_id) FROM requests " +
+                    "WHERE TO_CHAR(fulfill_time, 'WW') = '%s';",
+                    [week_num]
+                )
+                fulfill_count = cur.fetchone()
+
+                results.append(tuple([requests_count, fulfill_count]))
+
+        except Exception as ex:
+            self.connection.rollback()
+            raise ex
+
+        finally:
+            self.connection.commit()
+            cur.close()
+
+        return results

@@ -1,4 +1,5 @@
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 from pyrogram import ContinuePropagation
 from pyrogram.client import Client
@@ -169,8 +170,22 @@ async def stats_cmd(client: Client, message: Message):
         stats_text += f'<b>Fulfill Rate</b> : {fulfill_rate} %\n'
         stats_text += f'<b>Avg Req/day</b> : {round(all_requests / total_days, 2)} req/day'
 
-    await message.reply_text(
-        text=stats_text,
+    weekly_stats = DB.get_weekly_stats()
+    x_label = range(1, 54)
+    y_requests = [stat[0] for stat in weekly_stats]
+    y_fulfilled = [stat[1] for stat in weekly_stats]
+
+    plt.plot(x_label, y_requests, 'y^', label="Requests")
+    plt.plot(x_label, y_fulfilled, 'g^', label="Fulfilled")
+    plt.title(f"Weekly Stats for {group_name}")
+    plt.xlabel("Week")
+    plt.ylabel("Count")
+    plt.legend()
+    plt.savefig("./weekly_stats.png")
+
+    await message.reply_photo(
+        photo="./weekly_stats.png",
+        caption=stats_text,
         quote=True
     )
 

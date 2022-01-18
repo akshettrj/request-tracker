@@ -3,3 +3,4 @@ TgCrypto
 psycopg2-binary
 ujson
 python-dotenv
+matplotlib
