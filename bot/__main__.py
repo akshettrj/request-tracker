@@ -1,4 +1,6 @@
 from datetime import datetime
+from time import sleep
+from typing import List
 
 from pyrogram import Client, ContinuePropagation
 from pyrogram.types import Message
@@ -81,9 +83,10 @@ async def request_handler(client: Client, message: Message):
     req_time = REQ_TIMES['eng'] if user_last_request['is_english'] else REQ_TIMES['non_eng']
     last_req_str = 'English request' if user_last_request['is_english'] else 'Non-English request'
 
+    allow_request = True
+
     if user_last_request['fulfill_message_id'] is None:
         if time_gap_not_crossed(cur_time, user_last_request['req_time'], req_time):
-            await message.delete()
             await client.send_message(
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " +\
@@ -91,12 +94,10 @@ async def request_handler(client: Client, message: Message):
                         f"was less than {req_time['full']} ago and hence the new one is deleted." +\
                         "\n\nMuting you for 12 hours."
             )
-            await mute_user(client, user)
-            raise ContinuePropagation
+            allow_request = False
 
     else:
         if time_gap_not_crossed(cur_time, user_last_request['fulfill_time'], req_time):
-            await message.delete()
             await client.send_message(
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " + \
@@ -105,8 +106,28 @@ async def request_handler(client: Client, message: Message):
                         f"less than {req_time['full']} ago and hence the new one is deleted." +\
                         "\n\nMuting you for 12 hours."
             )
-            await mute_user(client, user)
-            raise ContinuePropagation
+            allow_request = False
+
+    if not allow_request:
+
+        sleep(1)
+
+        # Delete replies from EZBOOK BOT
+        replies = await client.get_messages(
+            chat_id=GROUP_ID,
+            reply_to_message_ids=message.message_id
+        )
+        if isinstance(replies, Message):
+            if replies.from_user and replies.from_user.id == EZBOOKBOT_ID:
+                await replies.delete()
+        elif isinstance(replies, List):
+            for reply in replies:
+                if reply.from_user and reply.from_user.id == EZBOOKBOT_ID:
+                    await reply.delete()
+
+        await mute_user(client, user)
+        await message.delete()
+        raise ContinuePropagation
 
     DB.register_request(user.id, is_english, message.message_id)
 
