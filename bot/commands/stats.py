@@ -171,15 +171,13 @@ async def stats_cmd(client: Client, message: Message):
         stats_text += f'<b>Avg Req/day</b> : {round(all_requests / total_days, 2)} req/day'
 
     weekly_stats = DB.get_weekly_stats()
-    x_label = range(1, len(weekly_stats)+1)
+    x_label = [f"Week {wn}" for wn in range(1, len(weekly_stats)+1)]
     y_requests = [stat[0] for stat in weekly_stats]
     y_fulfilled = [stat[1] for stat in weekly_stats]
 
-    plt.plot(x_label, y_requests, 'y^', label="Requests")
-    plt.plot(x_label, y_fulfilled, 'g^', label="Fulfilled")
+    plt.bar(x_label, y_requests, color="yellow", label="Requests")
+    plt.bar(x_label, y_fulfilled, color="green", label="Fulfilled")
     plt.title(f"Weekly Stats for {group_name}")
-    plt.xlabel("Week")
-    plt.ylabel("Count")
     plt.legend()
     plt.savefig("./weekly_stats.png")
 
