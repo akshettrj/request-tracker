@@ -657,19 +657,22 @@ class Database:
         cur = self.connection.cursor()
         results = []
         try:
-
-            for week_num in range(1, 54):
+            current_week = int(datetime.now().strftime("%V"))
+            for week_num in range(1, current_week+1):
+                padded_week = f"{week_num}" if week_num > 9 else f"0{week_num}"
                 cur.execute(
                     "SELECT count(message_id) FROM requests " +
-                    f"WHERE TO_CHAR(req_time, 'WW') = '{week_num}';"
+                    f"WHERE TO_CHAR(req_time, 'WW') = %s;",
+                    [padded_week]
                 )
-                requests_count = cur.fetchone()
+                requests_count = cur.fetchone()[0]
 
                 cur.execute(
                     "SELECT count(message_id) FROM requests " +
-                    f"WHERE TO_CHAR(fulfill_time, 'WW') = '{week_num}';"
+                    f"WHERE TO_CHAR(fulfill_time, 'WW') = %s;",
+                    [padded_week]
                 )
-                fulfill_count = cur.fetchone()
+                fulfill_count = cur.fetchone()[0]
 
                 print(f"Week Number {week_num} - {requests_count} reqs AND {fulfill_count} fulfilled")
 

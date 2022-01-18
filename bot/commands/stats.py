@@ -171,7 +171,7 @@ async def stats_cmd(client: Client, message: Message):
         stats_text += f'<b>Avg Req/day</b> : {round(all_requests / total_days, 2)} req/day'
 
     weekly_stats = DB.get_weekly_stats()
-    x_label = range(1, 54)
+    x_label = range(1, len(weekly_stats)+1)
     y_requests = [stat[0] for stat in weekly_stats]
     y_fulfilled = [stat[1] for stat in weekly_stats]
 
