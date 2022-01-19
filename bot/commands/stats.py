@@ -180,8 +180,8 @@ async def stats_cmd(client: Client, message: Message):
     y_fulfilled = [stat[1] for stat in weekly_stats]
 
     plt.clf()
-    plt.bar(x_requests, y_requests, color="yellow", label="Requests", width=0.25)
-    plt.bar(x_fulfilled, y_fulfilled, color="green", label="Fulfilled", width=0.25)
+    plt.bar(x_requests, y_requests, color="#AB8A14", label="Requests", width=0.25)
+    plt.bar(x_fulfilled, y_fulfilled, color="#35884C", label="Fulfilled", width=0.25)
     plt.title(f"Weekly Stats for {group_name}")
     plt.xticks(x_mid, x_label)
     plt.legend()
