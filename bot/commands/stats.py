@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 import matplotlib.pyplot as plt
 
 from pyrogram import ContinuePropagation
@@ -178,6 +179,7 @@ async def stats_cmd(client: Client, message: Message):
     y_requests = [stat[0] for stat in weekly_stats]
     y_fulfilled = [stat[1] for stat in weekly_stats]
 
+    plt.clf()
     plt.bar(x_requests, y_requests, color="yellow", label="Requests", width=0.25)
     plt.bar(x_fulfilled, y_fulfilled, color="green", label="Fulfilled", width=0.25)
     plt.title(f"Weekly Stats for {group_name}")
@@ -190,6 +192,8 @@ async def stats_cmd(client: Client, message: Message):
         caption=stats_text,
         quote=True
     )
+
+    os.remove("./weekly_stats.png")
 
     raise ContinuePropagation
 
