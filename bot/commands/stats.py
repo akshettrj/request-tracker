@@ -6,7 +6,8 @@ from pyrogram import ContinuePropagation
 from pyrogram.client import Client
 from pyrogram.types.messages_and_media.message import Message
 
-from bot import ( DB, GROUP_ID, NAME_CACHE, REQ_TIMES, HELP_DATA )
+from bot import ( DB, GROUP_ID, NAME_CACHE, REQ_TIMES, HELP_DATA,
+        GRAPH_FULFILLED_COLOR, GRAPH_REQUESTS_COLOR )
 from bot.client import app
 from bot.filters import CustomFilters
 from bot.helpers.utils import (
@@ -180,8 +181,8 @@ async def stats_cmd(client: Client, message: Message):
     y_fulfilled = [stat[1] for stat in weekly_stats]
 
     plt.clf()
-    plt.bar(x_requests, y_requests, color="#AB8A14", label="Requests", width=0.25)
-    plt.bar(x_fulfilled, y_fulfilled, color="#35884C", label="Fulfilled", width=0.25)
+    plt.bar(x_requests, y_requests, color=GRAPH_REQUESTS_COLOR, label="Requests", width=0.25)
+    plt.bar(x_fulfilled, y_fulfilled, color=GRAPH_FULFILLED_COLOR, label="Fulfilled", width=0.25)
     plt.title(f"Weekly Stats for {group_name}")
     plt.xticks(x_mid, x_label)
     plt.legend()

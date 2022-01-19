@@ -119,3 +119,7 @@ HELP_DATA = [
     ["help", "Get this help message", ["SUDO", "ADMINS"]],
     ["start", "Get confirmation that the bot is up", ["SUDO", "ADMINS"]],
 ]
+
+
+GRAPH_REQUESTS_COLOR = os.environ.get("REQUESTS_COLOR", "#ff3333")
+GRAPH_FULFILLED_COLOR = os.environ.get("FULFILLED_COLOR", "#80ff80")
