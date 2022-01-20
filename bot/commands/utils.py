@@ -4,7 +4,7 @@ from pyrogram import ContinuePropagation
 from pyrogram.client import Client
 from pyrogram.types.messages_and_media.message import Message
 
-from bot import ( DB, GROUP_ID, HELP_DATA )
+from bot import ( DB, GROUP_ID, HELP_DATA, NAME_CACHE )
 from bot.client import app
 from bot.filters import CustomFilters
 from bot.helpers.utils import (
@@ -86,9 +86,13 @@ async def lastfilled_cmd(client: Client, message: Message):
     cur_time = datetime.now()
 
     reply_text = "<b>The latest fulfilled request was:</b>\n\n"
-    reply_text += f"<b>Type:</b> {'English' if last_filled_req['is_english'] else 'Non English'}\n\n"
-    reply_text += f"{html_message_link(group_id, last_filled_req['message_id'], 'Request')} was {format_time_diff(cur_time, last_filled_req['req_time'])}\n"
-    reply_text += f"{html_message_link(group_id, last_filled_req['fulfill_message_id'], 'Fulfilled')} was {format_time_diff(cur_time, last_filled_req['fulfill_time'])}\n"
+    reply_text += f"- <b>Type:</b> {'English' if last_filled_req['is_english'] else 'Non English'}\n\n"
+    reply_text += f"- {html_message_link(group_id, last_filled_req['message_id'], 'Request')} was {format_time_diff(cur_time, last_filled_req['req_time'])}\n"
+    reply_text += f"- {html_message_link(group_id, last_filled_req['fulfill_message_id'], 'Fulfilled')} was {format_time_diff(cur_time, last_filled_req['fulfill_time'])}"
+
+    fulfilled_by_id = last_filled_req['fulfilled_by']
+    if fulfilled_by_id is not None and fulfilled_by_id in NAME_CACHE.keys():
+        reply_text += f' by <a href="tg://user?id={fulfilled_by_id}">{NAME_CACHE[fulfilled_by_id]["name"]}</a>'
 
     await message.reply_text(
         text=reply_text,

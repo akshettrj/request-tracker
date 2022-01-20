@@ -353,7 +353,7 @@ class Database:
             cur.execute(
                 "SELECT " +
                     "user_id, is_english, message_id, req_time," +
-                    "fulfill_message_id, fulfill_time " +
+                    "fulfill_message_id, fulfill_time, fulfilled_by " +
                 "FROM requests " +
                 "WHERE fulfill_time is NOT NULL " +
                 "ORDER BY" +
@@ -361,7 +361,8 @@ class Database:
             )
 
             ( usr_id, is_english, msg_id,
-            req_time, fulfill_message_id, fulfill_time ) = next(cur, (None, None, None, None, None, None))
+            req_time, fulfill_message_id, fulfill_time,
+            fulfilled_by ) = next(cur, (None, None, None, None, None, None, None))
 
         except Exception as ex:
             self.connection.rollback()
@@ -376,7 +377,8 @@ class Database:
             'message_id': msg_id,
             'req_time': req_time,
             'fulfill_message_id': fulfill_message_id,
-            'fulfill_time': fulfill_time
+            'fulfill_time': fulfill_time,
+            'fulfilled_by': fulfilled_by
         }
 
 
