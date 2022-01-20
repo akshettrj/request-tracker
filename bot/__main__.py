@@ -13,7 +13,7 @@ from bot.filters import CustomFilters
 from bot.helpers.utils import (
     is_sudo_user, is_admin, get_message_media,
     is_a_request, is_english_request, html_message_link,
-    time_gap_not_crossed, sort_help_data
+    time_gap_not_crossed, sort_help_data, format_time_diff
 )
 
 # don't remove this line, these are modules for the bot
@@ -91,6 +91,7 @@ async def request_handler(client: Client, message: Message):
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " +\
                         f"last {html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
+                        f"({format_time_diff(cur_time, user_last_request['req_time'])}) " +\
                         f"was less than {req_time['full']} ago and hence the new one is deleted." +\
                         "\n\nMuting you for 12 hours."
             )
@@ -102,7 +103,9 @@ async def request_handler(client: Client, message: Message):
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " + \
                         f"last {html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
+                        f"({format_time_diff(cur_time, user_last_request['req_time'])})" +\
                         f"was {html_message_link(group_id, user_last_request['fulfill_message_id'], 'fulfilled')} " +\
+                        f"({format_time_diff(cur_time, user_last_request['fulfill_time'])}) " +\
                         f"less than {req_time['full']} ago and hence the new one is deleted." +\
                         "\n\nMuting you for 12 hours."
             )
