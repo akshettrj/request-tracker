@@ -130,7 +130,7 @@ async def request_handler(client: Client, message: Message):
 
     if not allow_request:
 
-        sleep(2)
+        sleep(1)
 
         # Delete replies from EZBOOK BOT
         try:
