@@ -25,7 +25,24 @@ from bot.helpers.utils.telegram import mute_user
 async def request_fulfill_handler(_: Client, message: Message):
 
     user, replied_to = message.from_user, message.reply_to_message
-    if user is None or replied_to is None or replied_to.from_user is None:
+    if user is None or replied_to is None:
+        raise ContinuePropagation
+
+    if user.id == EZBOOKBOT_ID:
+
+        if replied_to is None:
+            await message.delete(revoke=True)
+            raise ContinuePropagation
+
+        else:
+            user_id = replied_to.from_user.id
+            db_request = DB.get_request(user_id, replied_to.message_id)
+            if db_request[0] is None:
+                await message.delete(revoke=True)
+                raise ContinuePropagation
+
+
+    if replied_to is None:
         raise ContinuePropagation
 
     if user.id != EZBOOKBOT_ID and get_message_media(message) is None:
@@ -186,13 +203,19 @@ def update_user_details(_: Client, message: Message):
     user_data = DB.get_user(user.id)
 
     if user_data is None or cached_details is None:
-        DB.add_user(user.id, name, username)
-        NAME_CACHE[user.id] = {"name": name, "user_name": username}
+        try:
+            DB.add_user(user.id, name, username)
+            NAME_CACHE[user.id] = {"name": name, "user_name": username}
+        except:
+            pass
         raise ContinuePropagation
 
     if name != cached_details['name'] or username != cached_details['user_name']:
-        DB.update_user(user.id, name, username)
-        NAME_CACHE[user.id] = {"name": name, "user_name": username}
+        try:
+            DB.update_user(user.id, name, username)
+            NAME_CACHE[user.id] = {"name": name, "user_name": username}
+        except:
+            pass
 
     raise ContinuePropagation
 
