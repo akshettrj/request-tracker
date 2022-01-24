@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from time import sleep
 from typing import List
 
@@ -7,7 +8,8 @@ from pyrogram.types import Message
 
 from bot.client import app
 from bot import (
-    DB, GROUP_ID, HELP_DATA, EZBOOKBOT_ID, NAME_CACHE, REQ_TIMES
+    DB, DB_BACKUP_CHAT_ID, GROUP_ID, HELP_DATA,
+    EZBOOKBOT_ID, NAME_CACHE, REQ_TIMES
 )
 from bot.filters import CustomFilters
 from bot.helpers.utils import (
@@ -20,6 +22,7 @@ from bot.helpers.utils import (
 from bot.commands import stats, database, utils
 from bot.helpers.utils.telegram import mute_user
 
+from apscheduler.schedulers.background import BackgroundScheduler
 
 @app.on_message(filters=CustomFilters.fulfill_filter)
 async def request_fulfill_handler(_: Client, message: Message):
@@ -218,5 +221,35 @@ def update_user_details(_: Client, message: Message):
             pass
 
     raise ContinuePropagation
+
+
+def create_backup():
+
+    try:
+        DB.get_backup_data()
+        _ = app.send_document(
+            chat_id=DB_BACKUP_CHAT_ID,
+            document="database_backup.zip"
+        )
+        os.remove("database_backup.zip")
+        os.remove("users.sql")
+        os.remove("requests.sql")
+
+    except Exception as ex:
+        _ = app.send_message(
+            chat_id=DB_BACKUP_CHAT_ID,
+            text=f"Failed to take backup:\n\n <code>{ex}</code>"
+        )
+
+
+if DB_BACKUP_CHAT_ID != -1:
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(
+        func=create_backup,
+        trigger="interval",
+        seconds=20*60*60,       # 20 Hrs
+        max_instances=1
+    )
+    scheduler.start()
 
 app.run()

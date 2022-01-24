@@ -27,6 +27,7 @@ class CustomFilters:
 
     userdetails_updater_filter = (
         _main_group_filter
+        & filters.text
     )
 
     request_filter = (

@@ -1,6 +1,7 @@
 from typing import Tuple
 import psycopg2
 from datetime import datetime
+from zipfile import ZipFile
 
 
 class Database:
@@ -712,3 +713,46 @@ class Database:
             cur.close()
 
         return results
+
+
+    def get_backup_data(self):
+
+        cur = self.connection.cursor()
+
+        table_names = [
+            "users",
+            "requests"
+        ]
+
+        def format_data(val):
+            if val is None:
+                return 'NULL'
+            elif isinstance(val, datetime):
+                return f"{val:'%Y-%m-%d %H:%M:%S'}"
+            else:
+                return repr(val)
+
+        try:
+            zipObj = ZipFile("database_backup.zip", "w")
+            for table_name in table_names:
+                cur.execute(
+                    f"SELECT * FROM {table_name};"
+                )
+                columns = [_.name for _ in cur.description]
+                insert_prefix = f'INSERT INTO {table_name} ({", ".join(columns)}) VALUES'
+                table_data = cur.fetchall()
+                with open(f"{table_name}.sql", "w") as f:
+                    for row in table_data:
+                        row_data = [format_data(val) for val in row]
+                        f.write(f"{insert_prefix} ({', '.join(row_data)});\n")
+
+                zipObj.write(f"{table_name}.sql")
+            zipObj.close()
+
+        except Exception as ex:
+            self.connection.rollback()
+            raise ex
+
+        finally:
+            self.connection.commit()
+            cur.close()

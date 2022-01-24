@@ -7,8 +7,8 @@ import logging
 from bot.helpers.database import Database
 
 logging.basicConfig(
-        format='[%(levelname)s] (%(asctime)s) %(message)s'
-        )
+    format='[%(levelname)s] (%(asctime)s) %(message)s'
+)
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -123,3 +123,8 @@ HELP_DATA = [
 
 GRAPH_REQUESTS_COLOR = os.environ.get("REQUESTS_COLOR", "#ff3333")
 GRAPH_FULFILLED_COLOR = os.environ.get("FULFILLED_COLOR", "#80ff80")
+
+
+DB_BACKUP_CHAT_ID = int(os.environ.get("DB_BACKUP_CHAT_ID", "-1"))
+if DB_BACKUP_CHAT_ID == -1:
+    logger.info("No db backup chat id provided, the database will not be backed up")
