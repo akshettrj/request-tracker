@@ -172,17 +172,19 @@ async def stats_cmd(client: Client, message: Message):
         stats_text += f'<b>Fulfill Rate</b> : {fulfill_rate} %\n'
         stats_text += f'<b>Avg Req/day</b> : {round(all_requests / total_days, 2)} req/day'
 
+    bar_width = 0.1
+
     weekly_stats = DB.get_weekly_stats()
     x_label = [f"Week {wn}" for wn in range(1, len(weekly_stats)+1)]
-    x_requests = [i - 0.25 for i in range(1, len(weekly_stats) + 1)]
+    x_requests = [i - bar_width for i in range(1, len(weekly_stats) + 1)]
     x_fulfilled = [i for i in range(1, len(weekly_stats) + 1)]
-    x_mid = [i - 0.125 for i in range(1, len(weekly_stats) + 1)]
+    x_mid = [i - (bar_width/2) for i in range(1, len(weekly_stats) + 1)]
     y_requests = [stat[0] for stat in weekly_stats]
     y_fulfilled = [stat[1] for stat in weekly_stats]
 
     plt.clf()
-    plt.bar(x_requests, y_requests, color=GRAPH_REQUESTS_COLOR, label="Requests", width=0.25)
-    plt.bar(x_fulfilled, y_fulfilled, color=GRAPH_FULFILLED_COLOR, label="Fulfilled", width=0.25)
+    plt.bar(x_requests, y_requests, color=GRAPH_REQUESTS_COLOR, label="Requests", width=bar_width)
+    plt.bar(x_fulfilled, y_fulfilled, color=GRAPH_FULFILLED_COLOR, label="Fulfilled", width=bar_width)
     plt.title(f"Weekly Stats for {group_name}")
     plt.xticks(x_mid, x_label)
     plt.legend()
