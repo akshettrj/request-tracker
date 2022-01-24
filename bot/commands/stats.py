@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import matplotlib.pyplot as plt
 
@@ -145,13 +145,20 @@ async def stats_cmd(client: Client, message: Message):
 
     start_date = None
     total_days = 1
+    curr_date = datetime.now().date()
     oldest_req_time = DB.get_oldest_request_time()
-    if oldest_req_time is not None:
-        start_date = oldest_req_time[0].date()
-        curr_time = datetime.now().date()
-        total_days = (curr_time-start_date).days
-        if total_days == 0:
-            total_days = 1
+    if oldest_req_time is None or not oldest_req_time:
+        await message.reply_text(
+            text="There are no requests in the database currently!",
+            quote=True
+        )
+        raise ContinuePropagation
+
+    start_time = oldest_req_time[0]
+    start_date = start_time.date()
+    total_days = (curr_date-start_date).days
+    if total_days == 0:
+        total_days = 1
 
     try:
         group_name = await get_main_group_name(client)
@@ -173,14 +180,25 @@ async def stats_cmd(client: Client, message: Message):
         stats_text += f'<b>Avg Req/day</b> : {round(all_requests / total_days, 2)} req/day'
 
     bar_width = 0.1
+    week_start = start_date
+    weeks = []
+    while week_start <= curr_date:
+        week_number = int(week_start.strftime("%W"))
+        start_weekday = int(week_start.strftime("%w"))
+        week_end = week_start + timedelta(days=((7-start_weekday)%7))
+        weeks.append((week_start, week_end, week_number))
+        week_start = week_end + timedelta(days=1)
 
-    weekly_stats = DB.get_weekly_stats()
-    x_label = [f"Week {wn}" for wn in range(1, len(weekly_stats)+1)]
+    weekly_stats = DB.get_weekly_stats(weeks)
+    x_label = [
+        f"Week {wn+1}\n({ws:%d/%m}-{we:%d/%m})"
+        for (wn,(rc, fc)), (ws, we, _) in zip(weekly_stats.items(),weeks)
+    ]
     x_requests = [i - bar_width for i in range(1, len(weekly_stats) + 1)]
     x_fulfilled = [i for i in range(1, len(weekly_stats) + 1)]
     x_mid = [i - (bar_width/2) for i in range(1, len(weekly_stats) + 1)]
-    y_requests = [stat[0] for stat in weekly_stats]
-    y_fulfilled = [stat[1] for stat in weekly_stats]
+    y_requests = [weekly_stats[stat][0] for stat in weekly_stats]
+    y_fulfilled = [weekly_stats[stat][1] for stat in weekly_stats]
 
     plt.clf()
     plt.bar(x_requests, y_requests, color=GRAPH_REQUESTS_COLOR, label="Requests", width=bar_width)

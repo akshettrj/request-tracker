@@ -1,6 +1,6 @@
 from typing import Tuple
 import psycopg2
-from datetime import datetime
+from datetime import datetime, timedelta
 from zipfile import ZipFile
 
 
@@ -678,31 +678,30 @@ class Database:
         return result
 
 
-    def get_weekly_stats(self):
+    def get_weekly_stats(self, weeks):
 
         cur = self.connection.cursor()
-        results = []
+        results = {}
         try:
-            current_week = int(datetime.now().strftime("%V"))
-            for week_num in range(1, current_week+1):
-                padded_week = f"{week_num}" if week_num > 9 else f"0{week_num}"
+            for week in weeks:
+                week_start, week_end, week_number = week
+                week_end = week_end + timedelta(days=1)
+
                 cur.execute(
                     "SELECT count(message_id) FROM requests " +
-                    f"WHERE TO_CHAR(req_time, 'WW') = %s;",
-                    [padded_week]
+                    "WHERE req_time >= %s AND req_time <= %s;",
+                    [week_start, week_end]
                 )
                 requests_count = cur.fetchone()[0]
 
                 cur.execute(
                     "SELECT count(message_id) FROM requests " +
-                    f"WHERE TO_CHAR(fulfill_time, 'WW') = %s;",
-                    [padded_week]
+                    "WHERE fulfill_time >= %s AND fulfill_time <= %s;",
+                    [week_start, week_end]
                 )
                 fulfill_count = cur.fetchone()[0]
 
-                print(f"Week Number {week_num} - {requests_count} reqs AND {fulfill_count} fulfilled")
-
-                results.append(tuple([requests_count, fulfill_count]))
+                results[week_number] = (requests_count, fulfill_count)
 
         except Exception as ex:
             self.connection.rollback()
