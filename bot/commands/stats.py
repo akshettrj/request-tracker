@@ -164,7 +164,7 @@ async def stats_cmd(client: Client, message: Message):
 
     fulfill_rate = round((all_requests_fulfilled * 100) / all_requests, 2)
 
-    stats_text = f'<b>Stats for {group_name} {f"since {format_date(start_date)}" if start_date is not None else ""}</b>\n\n'
+    stats_text = f'<b>Stats for {group_name} {f"since {format_date(start_date)} ({total_days} days)" if start_date is not None else ""}</b>\n\n'
     stats_text += f'<b>Eng. Requests</b> : {english_fulfilled} / {english_requests}\n'
     stats_text += f'<b>Non-Eng. Requests</b> : {non_english_fulfilled} / {non_english_requests}\n\n'
     stats_text += f'<b>Total Requests Fulfilled</b> : {all_requests_fulfilled} / {all_requests}\n\n'
