@@ -85,6 +85,29 @@ class Database:
             cur.close()
 
 
+    def get_user_details(self, user_id: int):
+        cur = self.connection.cursor()
+        try:
+            cur.execute(
+                "SELECT user_id, name, user_name FROM users WHERE user_id = %s",
+                [user_id]
+            )
+            (usr_id, name, user_name) = next(cur, (None, None, None))
+
+        except Exception as ex:
+            self.connection.rollback()
+            raise ex
+
+        finally:
+            cur.close()
+
+        return {
+            "user_id": usr_id,
+            "name": name,
+            "user_name": user_name
+        } if usr_id is not None else None
+
+
     def get_user(self, user_id: int):
         cur = self.connection.cursor()
         try:

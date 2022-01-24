@@ -220,15 +220,15 @@ async def leaderboard_cmd(client: Client, message: Message):
     for pos, result in enumerate(results):
 
         fulfill_count, user_id = result
-        user_details = NAME_CACHE[user_id] if user_id in NAME_CACHE.keys() else None
+        user_details = NAME_CACHE[user_id] if user_id in NAME_CACHE.keys() else DB.get_user_details(user_id)
 
         if user_details is None:
             leaderboard_text += f"{pos+1}) <b>[id:{user_id}]</b> ({fulfill_count} filled)\n"
             continue
 
-        name, username = user_details['name'], user_details['user_name']
+        name, _ = user_details['name'], user_details['user_name']
 
-        leaderboard_text += f"{pos+1}) <b>{name}</b> [<i>{username if username != '' else '-'}</i>] ({fulfill_count} filled)\n"
+        leaderboard_text += f'{pos+1}) <a href="tg://user?id={user_id}">{name}</a> ({fulfill_count} filled)\n'
 
     await message.reply_text(
         text=leaderboard_text,
