@@ -1,7 +1,10 @@
+import os
 from typing import Tuple
 import psycopg2
 from datetime import datetime, timedelta
 from zipfile import ZipFile
+
+import pytz
 
 
 class Database:
@@ -722,6 +725,8 @@ class Database:
             "users",
             "requests"
         ]
+        cur_time = datetime.now(tz=pytz.timezone('Asia/Kolkata'))
+        zip_file_name = f"database_backup_{cur_time:%d-%m-%Y-%H:%M:%S}.zip"
 
         def format_data(val):
             if val is None:
@@ -732,7 +737,7 @@ class Database:
                 return repr(val)
 
         try:
-            zipObj = ZipFile("database_backup.zip", "w")
+            zipObj = ZipFile(zip_file_name, "w")
             for table_name in table_names:
                 cur.execute(
                     f"SELECT * FROM {table_name};"
@@ -748,6 +753,9 @@ class Database:
                 zipObj.write(f"{table_name}.sql")
             zipObj.close()
 
+            os.remove("users.sql")
+            os.remove("requests.sql")
+
         except Exception as ex:
             self.connection.rollback()
             raise ex
@@ -755,3 +763,5 @@ class Database:
         finally:
             self.connection.commit()
             cur.close()
+
+        return zip_file_name

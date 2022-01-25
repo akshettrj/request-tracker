@@ -223,17 +223,30 @@ def update_user_details(_: Client, message: Message):
     raise ContinuePropagation
 
 
+@app.on_message(filters=CustomFilters.backupdb_cmd_filter)
+async def pending_cmd(client: Client, message: Message):
+
+    user = message.from_user
+    if user is None:
+        raise ContinuePropagation
+
+    if (not await is_sudo_user(user)) and (not await is_admin(client, user)):
+        raise ContinuePropagation
+
+    create_backup()
+
+    raise ContinuePropagation
+
+
 def create_backup():
 
     try:
-        DB.get_backup_data()
+        zip_file_name = DB.get_backup_data()
         _ = app.send_document(
             chat_id=DB_BACKUP_CHAT_ID,
-            document="database_backup.zip"
+            document=zip_file_name
         )
-        os.remove("database_backup.zip")
-        os.remove("users.sql")
-        os.remove("requests.sql")
+        os.remove(zip_file_name)
 
     except Exception as ex:
         _ = app.send_message(

@@ -137,3 +137,9 @@ class CustomFilters:
         & (_sudo_user_filter | _main_group_filter)
         & filters.command("leaderboard", COMMAND_PREFIXES)
     )
+
+    backupdb_cmd_filter = (
+        ~filters.edited
+        & _sudo_user_filter
+        & filters.command("backupdb", COMMAND_PREFIXES)
+    )
