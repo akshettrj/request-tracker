@@ -244,7 +244,8 @@ def create_backup():
         zip_file_name = DB.get_backup_data()
         _ = app.send_document(
             chat_id=DB_BACKUP_CHAT_ID,
-            document=zip_file_name
+            document=zip_file_name,
+            caption="#database #backup"
         )
         os.remove(zip_file_name)
 
