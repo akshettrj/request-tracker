@@ -18,7 +18,7 @@ from bot.helpers.utils import (
     time_gap_not_crossed, sort_help_data, format_time_diff
 )
 
-# don't remove this line, these are modules for the bot
+# ⚠️ DON'T REMOVE THIS LINE, THESE ARE MODULES FOR THE BOT ⚠️
 from bot.commands import stats, database, utils
 from bot.helpers.utils.telegram import mute_user
 
@@ -164,6 +164,11 @@ async def request_handler(client: Client, message: Message):
         raise ContinuePropagation
 
     DB.register_request(user.id, is_english, message.message_id)
+    await client.send_reaction(
+        chat_id=GROUP_ID,
+        message_id=message.message_id,
+        emoji="👍"
+    )
 
     raise ContinuePropagation
 
