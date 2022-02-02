@@ -3,7 +3,8 @@ import os
 from time import sleep
 from typing import List
 
-from pyrogram import Client, ContinuePropagation
+from pyrogram import ContinuePropagation
+from pyrogram.client import Client
 from pyrogram.types import Message
 
 from bot.client import app
@@ -15,7 +16,7 @@ from bot.filters import CustomFilters
 from bot.helpers.utils import (
     is_sudo_user, is_admin, get_message_media,
     is_a_request, is_english_request, html_message_link,
-    time_gap_not_crossed, sort_help_data, format_time_diff
+    check_time_gap_crossed, sort_help_data, format_time_diff
 )
 
 # ⚠️ DON'T REMOVE THIS LINE, THESE ARE MODULES FOR THE BOT ⚠️
@@ -106,19 +107,21 @@ async def request_handler(client: Client, message: Message):
     allow_request = True
 
     if user_last_request['fulfill_message_id'] is None:
-        if time_gap_not_crossed(cur_time, user_last_request['req_time'], req_time):
+        crossed, time_diff = check_time_gap_crossed(cur_time, user_last_request['req_time'], req_time)
+        if not crossed:
             await client.send_message(
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " +\
                         f"last {html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
                         f"({format_time_diff(cur_time, user_last_request['req_time'])}) " +\
                         f"was less than {req_time['full']} ago and hence the new one is deleted." +\
-                        "\n\nMuting you for 12 hours."
+                        f"\n\nMuting you for 12 hours.\nCome back after {format_time_diff(t1=None, t2=None, t_diff=time_diff).replace(' ago', '')}"
             )
             allow_request = False
 
     else:
-        if time_gap_not_crossed(cur_time, user_last_request['fulfill_time'], req_time):
+        crossed, time_diff = check_time_gap_crossed(cur_time, user_last_request['fulfill_time'], req_time)
+        if not crossed:
             await client.send_message(
                 chat_id=GROUP_ID,
                 text=f"{user.mention(user.first_name)}, your " + \
@@ -127,7 +130,7 @@ async def request_handler(client: Client, message: Message):
                         f"was {html_message_link(group_id, user_last_request['fulfill_message_id'], 'fulfilled')} " +\
                         f"({format_time_diff(cur_time, user_last_request['fulfill_time'])}) " +\
                         f"less than {req_time['full']} ago and hence the new one is deleted." +\
-                        "\n\nMuting you for 12 hours."
+                        f"\n\nMuting you for 12 hours.\nCome back after {format_time_diff(t1=None, t2=None, t_diff=time_diff).replace(' ago', '')}"
             )
             allow_request = False
 
@@ -165,6 +168,29 @@ async def request_handler(client: Client, message: Message):
 
     DB.register_request(user.id, is_english, message.message_id)
 
+    raise ContinuePropagation
+
+
+@app.on_message(filters=CustomFilters.incorrect_request_filter)
+async def non_bot_request_handler(client: Client, message: Message):
+
+    user, body = message.from_user, message.text
+    if user is None or body is None:
+        raise ContinuePropagation
+
+    if (await is_sudo_user(user)) or (await is_admin(client, user)):
+        raise ContinuePropagation
+
+    if not is_a_request(message):
+        raise ContinuePropagation
+
+    await message.delete()
+    await client.send_message(
+        chat_id=GROUP_ID,
+        text=(f"{user.mention(user.first_name)}, "
+           "Please use the Request Generator Bot for your requests\n\n"
+           'See the <a href="https://t.me/c/1559332818/6059">pinned message</a> for more information')
+    )
     raise ContinuePropagation
 
 

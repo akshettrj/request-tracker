@@ -1,21 +1,23 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 
-def time_gap_not_crossed(curr_time: datetime, old_time: datetime, gap):
+def check_time_gap_crossed(curr_time: datetime, old_time: datetime, gap):
 
-    print(gap['value'])
     if gap['type'] == 'd':
         time_diff = curr_time.date() - old_time.date()
-        return time_diff.days < gap['value']
+        time_change = timedelta(days=gap['value'])
+        return time_diff.days >= gap['value'], datetime.combine(old_time.date() + time_change, datetime.min.time()) - curr_time
 
     elif gap['type'] == 'min':
         time_diff = curr_time - old_time
         mins = time_diff.seconds // 60
-        return mins < gap['value']
+        time_change = timedelta(minutes=gap['value'])
+        return mins >= gap['value'], old_time + time_change - curr_time
 
     elif gap['type'] == 's':
         time_diff = curr_time - old_time
-        return time_diff.seconds < gap['value']
+        time_change = timedelta(seconds=gap['value'])
+        return time_diff.seconds >= gap['value'], old_time + time_change - curr_time
 
 
 def format_date(d: date):
@@ -39,8 +41,8 @@ def format_date(d: date):
     return date_string
 
 
-def format_time_diff(t1: datetime, t2: datetime):
-    t_diff = t1 - t2
+def format_time_diff(t1: datetime|None, t2: datetime|None, t_diff=None):
+    t_diff = t1 - t2 if t_diff is None else t_diff
     t_days = f"{t_diff.days} days " if t_diff.days > 0 else ""
 
     hours = (t_diff.seconds // 3600) % 24
@@ -50,11 +52,9 @@ def format_time_diff(t1: datetime, t2: datetime):
     mins = (t_diff.seconds // 60) % 60
 
     t_mins = ""
-    if t_diff.days == 0 and mins != 0:
+    if mins != 0:
         t_mins = f"{mins} mins "
 
-    t_secs = ""
-    if t_diff.days == 0 and hours == 0 and mins == 0:
-        t_secs = f"{t_diff.seconds % 60} s "
+    t_secs = f"{t_diff.seconds % 60} s "
 
     return f"{t_days}{t_hours}{t_mins}{t_secs}ago"

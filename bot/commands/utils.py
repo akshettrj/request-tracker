@@ -212,7 +212,6 @@ async def formfulfilled_cmd(client: Client, message: Message):
                                     chat_id=GROUP_ID,
                                     message_ids=request['fulfill_message_id']
                                 )
-            print(fulfill_message)
         except:
             fulfill_message = None
 

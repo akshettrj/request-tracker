@@ -1,4 +1,5 @@
-from pyrogram import Client, ContinuePropagation
+from pyrogram import ContinuePropagation
+from pyrogram.client import Client
 from pyrogram.types.messages_and_media.message import Message
 
 from bot import (
