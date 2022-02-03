@@ -1,4 +1,4 @@
-Pyrogram==1.14.0
+Pyrogram==1.4.0
 TgCrypto
 psycopg2-binary
 ujson
