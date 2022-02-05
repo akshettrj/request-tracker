@@ -30,18 +30,10 @@ class CustomFilters:
         & filters.text
     )
 
-    incorrect_request_filter = (
-        ~filters.edited
-        & filters.text
-        & _main_group_filter
-        & ~filters.via_bot
-    )
-
     request_filter = (
         ~filters.edited
         & filters.text
         & _main_group_filter
-        & filters.via_bot
     )
 
     fulfill_filter = (

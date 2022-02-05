@@ -61,3 +61,20 @@ async def mute_user(client: Client, user: User):
         permissions=ChatPermissions(can_send_messages=False),
         until_date=int(time() + 12 * 60 * 60)
     )
+
+def has_link(message: Message):
+
+    entities = message.entities
+    if entities is None:
+        return False
+
+    return_value = False
+
+    for entity in entities:
+
+        if entity.type not in ["url", "text_link"]:
+            continue
+
+        return_value = True
+
+    return return_value
