@@ -204,10 +204,16 @@ async def stats_cmd(client: Client, message: Message):
     y_requests = [weekly_stats[stat][0] for stat in weekly_stats]
     y_fulfilled = [weekly_stats[stat][1] for stat in weekly_stats]
 
-    plt.figure(figsize=(20, 10))
+    if 5 <= len(weeks) <= 10:
+        plt.figure(figsize=(20, 10))
+    elif 10 < len(weeks) < 20:
+        plt.figure(figsize=(30, 20))
     plt.clf()
     plt.bar(x_requests, y_requests, color=GRAPH_REQUESTS_COLOR, label="Requests", width=bar_width)
     plt.bar(x_fulfilled, y_fulfilled, color=GRAPH_FULFILLED_COLOR, label="Fulfilled", width=bar_width)
+    for ((xr,yr)), (xf,yf) in zip(zip(x_requests, y_requests), zip(x_fulfilled, x_fulfilled)):
+        max_height = max(yr,yf) + 2
+        plt.text(xf, max_height, f"{yr} : {yf}")
     plt.title(f"Weekly Stats for {group_name}")
     plt.xticks(x_mid, x_label)
     plt.legend()
