@@ -213,8 +213,8 @@ async def stats_cmd(client: Client, message: Message):
     plt.legend()
     plt.savefig("./weekly_stats.png")
 
-    await message.reply_photo(
-        photo="./weekly_stats.png",
+    await message.reply_document(
+        document="./weekly_stats.png",
         caption=stats_text,
         quote=True
     )
