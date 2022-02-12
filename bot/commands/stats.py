@@ -211,9 +211,9 @@ async def stats_cmd(client: Client, message: Message):
     plt.clf()
     plt.bar(x_requests, y_requests, color=GRAPH_REQUESTS_COLOR, label="Requests", width=bar_width)
     plt.bar(x_fulfilled, y_fulfilled, color=GRAPH_FULFILLED_COLOR, label="Fulfilled", width=bar_width)
-    for ((xr,yr)), (xf,yf) in zip(zip(x_requests, y_requests), zip(x_fulfilled, x_fulfilled)):
-        max_height = max(yr,yf) + 2
-        plt.text(xf, max_height, f"{yr} : {yf}")
+    for ((xr,yr)), (xf,yf) in zip(zip(x_requests, y_requests), zip(x_fulfilled, y_fulfilled)):
+        max_height = max(yr,yf) + 1
+        plt.text(xr, max_height, f"{yr} : {yf}")
     plt.title(f"Weekly Stats for {group_name}")
     plt.xticks(x_mid, x_label)
     plt.legend()
