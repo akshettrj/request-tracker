@@ -191,7 +191,11 @@ async def stats_cmd(client: Client, message: Message):
 
     weekly_stats = DB.get_weekly_stats(weeks)
     x_label = [
-        f"Week {wn+1}\n({ws:%d/%m}-{we:%d/%m})"
+        f"Week {wn+1}\n(" + (
+            f"{ws:%b %d}-{we:%d}"
+            if ws.month == we.month
+            else f"{ws:%b %d}-{we:%b %d}"
+        ) + ")"
         for (wn,(rc, fc)), (ws, we, _) in zip(weekly_stats.items(),weeks)
     ]
     x_requests = [i - bar_width for i in range(1, len(weekly_stats) + 1)]
