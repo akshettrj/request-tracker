@@ -200,6 +200,7 @@ async def stats_cmd(client: Client, message: Message):
     y_requests = [weekly_stats[stat][0] for stat in weekly_stats]
     y_fulfilled = [weekly_stats[stat][1] for stat in weekly_stats]
 
+    plt.figure(figsize=(20, 10))
     plt.clf()
     plt.bar(x_requests, y_requests, color=GRAPH_REQUESTS_COLOR, label="Requests", width=bar_width)
     plt.bar(x_fulfilled, y_fulfilled, color=GRAPH_FULFILLED_COLOR, label="Fulfilled", width=bar_width)
