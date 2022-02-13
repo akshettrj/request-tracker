@@ -94,6 +94,13 @@ async def request_handler(client: Client, message: Message):
         raise ContinuePropagation
 
     if not is_a_request(message):
+        if ("#request" in body.lower()) and ("#audiobook" not in body.lower()):
+            await message.reply_text(
+                text="/warn This is an exclusive audiobook only group, no ebook requests allowed read the rules.",
+                quote=True
+            )
+            sleep(1)
+            await message.delete()
         raise ContinuePropagation
 
     is_english = is_english_request(message)
