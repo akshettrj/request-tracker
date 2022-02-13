@@ -191,7 +191,7 @@ async def request_handler(client: Client, message: Message):
                         f"({format_time_diff(cur_time, user_last_request['req_time'])}) " +\
                         f"was less than {req_time['full']} ago and hence the new one is deleted." +\
                         f"\n\nMuting you for 12 hours." +\
-                        f"\nCome back after {format_time_diff(t1=None, t2=None, t_diff=time_diff).replace(' ago', '')} (on {appr_time.replace(tzinfo=timezone('Asia/Kolkata')):%d/%m/%Y} IST)"
+                        f"\nCome back after {format_time_diff(t1=None, t2=None, t_diff=time_diff).replace(' ago', '')} (on {appr_time.replace(tzinfo=timezone('Asia/Kolkata')):%d %b} IST)"
             )
             allow_request = False
 
@@ -208,7 +208,7 @@ async def request_handler(client: Client, message: Message):
                         f"({format_time_diff(cur_time, user_last_request['fulfill_time'])}) " +\
                         f"less than {req_time['full']} ago and hence the new one is deleted." +\
                         f"\n\nMuting you for 12 hours." +\
-                        f"\nCome back after {format_time_diff(t1=None, t2=None, t_diff=time_diff).replace(' ago', '')} (on {appr_time.replace(tzinfo=timezone('Asia/Kolkata')):%d/%m/%Y} IST)"
+                        f"\nCome back after {format_time_diff(t1=None, t2=None, t_diff=time_diff).replace(' ago', '')} (on {appr_time.replace(tzinfo=timezone('Asia/Kolkata')):%d %b} IST)"
             )
             allow_request = False
 
