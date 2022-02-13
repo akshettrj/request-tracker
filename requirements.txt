@@ -1,4 +1,5 @@
 Pyrogram==1.4.0
+pytz
 TgCrypto
 psycopg2-binary
 ujson

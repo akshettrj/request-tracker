@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+from pytz import timezone
 
 
 def check_time_gap_crossed(curr_time: datetime, old_time: datetime, gap):
@@ -6,18 +7,21 @@ def check_time_gap_crossed(curr_time: datetime, old_time: datetime, gap):
     if gap['type'] == 'd':
         time_diff = curr_time.date() - old_time.date()
         time_change = timedelta(days=gap['value'])
-        return time_diff.days >= gap['value'], datetime.combine(old_time.date() + time_change, datetime.min.time()) - curr_time
+        appropriate_time = datetime.combine(old_time.date() + time_change, datetime.min.time()).replace(tzinfo=timezone('Asia/Kolkata'))
+        return time_diff.days >= gap['value'], appropriate_time
 
     elif gap['type'] == 'min':
         time_diff = curr_time - old_time
         mins = time_diff.seconds // 60
         time_change = timedelta(minutes=gap['value'])
-        return mins >= gap['value'], old_time + time_change - curr_time
+        appropriate_time = (old_time + time_change).replace(tzinfo=timezone('Asia/Kolkata'))
+        return mins >= gap['value'], appropriate_time
 
     elif gap['type'] == 's':
         time_diff = curr_time - old_time
         time_change = timedelta(seconds=gap['value'])
-        return time_diff.seconds >= gap['value'], old_time + time_change - curr_time
+        appropriate_time = (old_time + time_change).replace(tzinfo=timezone('Asia/Kolkata'))
+        return time_diff.seconds >= gap['value'], appropriate_time
 
 
 def format_date(d: date):

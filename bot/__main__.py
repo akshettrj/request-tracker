@@ -173,7 +173,8 @@ async def request_handler(client: Client, message: Message):
     allow_request = True
 
     if user_last_request['fulfill_message_id'] is None:
-        crossed, time_diff = check_time_gap_crossed(cur_time, user_last_request['req_time'], req_time)
+        crossed, appr_time = check_time_gap_crossed(cur_time, user_last_request['req_time'], req_time)
+        time_diff = appr_time - cur_time
         if not crossed:
             await client.send_message(
                 chat_id=GROUP_ID,
@@ -181,12 +182,14 @@ async def request_handler(client: Client, message: Message):
                         f"last {html_message_link(group_id, user_last_request['message_id'], last_req_str)} " +\
                         f"({format_time_diff(cur_time, user_last_request['req_time'])}) " +\
                         f"was less than {req_time['full']} ago and hence the new one is deleted." +\
-                        f"\n\nMuting you for 12 hours.\nCome back after {format_time_diff(t1=None, t2=None, t_diff=time_diff).replace(' ago', '')}"
+                        f"\n\nMuting you for 12 hours." +\
+                        f"\nCome back after {format_time_diff(t1=None, t2=None, t_diff=time_diff).replace(' ago', '')} (on {appr_time:%d/%m/%Y} IST)"
             )
             allow_request = False
 
     else:
-        crossed, time_diff = check_time_gap_crossed(cur_time, user_last_request['fulfill_time'], req_time)
+        crossed, appr_time = check_time_gap_crossed(cur_time, user_last_request['fulfill_time'], req_time)
+        time_diff = appr_time - cur_time
         if not crossed:
             await client.send_message(
                 chat_id=GROUP_ID,
@@ -196,7 +199,8 @@ async def request_handler(client: Client, message: Message):
                         f"was {html_message_link(group_id, user_last_request['fulfill_message_id'], 'fulfilled')} " +\
                         f"({format_time_diff(cur_time, user_last_request['fulfill_time'])}) " +\
                         f"less than {req_time['full']} ago and hence the new one is deleted." +\
-                        f"\n\nMuting you for 12 hours.\nCome back after {format_time_diff(t1=None, t2=None, t_diff=time_diff).replace(' ago', '')}"
+                        f"\n\nMuting you for 12 hours." +\
+                        f"\nCome back after {format_time_diff(t1=None, t2=None, t_diff=time_diff).replace(' ago', '')} (on {appr_time:%d/%m/%Y} IST)"
             )
             allow_request = False
 
