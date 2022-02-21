@@ -105,6 +105,32 @@ async def request_handler(client: Client, message: Message):
 
     is_english = is_english_request(message)
 
+    if message.via_bot is None:
+
+        request_lines = body.split("\n")
+        request_lines = [
+            line.strip()
+            for line in request_lines
+            if line.strip() != ''
+        ]
+
+        if len(request_lines) != 5 or (not has_link(message)):
+
+            await message.delete()
+            await client.send_message(
+                chat_id=GROUP_ID,
+                text=(f"{user.mention(user.first_name)}, "
+                   "Make sure your request is in correct format:\n\n"
+                   "<i>#request #audiobook (+ other needed tags)</i>\n"
+                   "<i>Title</i>\n"
+                   "<i>Author</i>\n"
+                   "<i>Publisher (or Self-published when publisher isn't specified)</i>\n"
+                   "<i>Link</i>\n\n"
+                   "- <b>Send a new request in proper format.</b>\n"
+                   '- See the <a href="https://t.me/c/1559332818/6059">pinned message</a> for help regarding request generator bot\n'),
+            )
+            raise ContinuePropagation
+
     if DB.get_user(user.id) is None:
         user_name = f"{user.first_name} {user.last_name or ''}".strip()
         DB.add_user(user.id, user_name, user.username or '')
@@ -114,29 +140,6 @@ async def request_handler(client: Client, message: Message):
             message_id=message.message_id,
             emoji="👍"
         )
-        if message.via_bot is None:
-
-            request_lines = body.split("\n")
-            request_lines = [
-                line.strip()
-                for line in request_lines
-                if line.strip() != ''
-            ]
-
-            if len(request_lines) != 5 or (not has_link(message)):
-
-                await message.reply_text(
-                    text=(f"{user.mention(user.first_name)}, "
-                       "Make sure your request is in correct format:\n\n"
-                       "<i>#request #audiobook (+ other needed tags)</i>\n"
-                       "<i>Title</i>\n"
-                       "<i>Author</i>\n"
-                       "<i>Publisher (or Self-published when publisher isn't specified)</i>\n"
-                       "<i>Link</i>\n\n"
-                       "- <b>Edit your message to add the missing details</b>\n"
-                       '- See the <a href="https://t.me/c/1559332818/6059">pinned message</a> for help regarding request generator bot\n'),
-                    quote=True
-                )
         raise ContinuePropagation
 
     cur_time = datetime.now()
@@ -144,29 +147,6 @@ async def request_handler(client: Client, message: Message):
 
     user_last_request = DB.get_user_last_request(user.id)
     if user_last_request['user_id'] is None:
-        if message.via_bot is None:
-
-            request_lines = body.split("\n")
-            request_lines = [
-                line.strip()
-                for line in request_lines
-                if line.strip() != ''
-            ]
-
-            if len(request_lines) != 5 or (not has_link(message)):
-
-                await message.reply_text(
-                    text=(f"{user.mention(user.first_name)}, "
-                       "Make sure your request is in correct format:\n\n"
-                       "<i>#request #audiobook (+ other needed tags)</i>\n"
-                       "<i>Title</i>\n"
-                       "<i>Author</i>\n"
-                       "<i>Publisher (or Self-published when publisher isn't specified)</i>\n"
-                       "<i>Link</i>\n\n"
-                       "- <b>Edit your message to add the missing details</b>\n"
-                       '- See the <a href="https://t.me/c/1559332818/6059">pinned message</a> for help regarding request generator bot\n'),
-                    quote=True
-                )
         DB.register_request(user.id, is_english, message.message_id)
         await client.send_reaction(
             chat_id=message.chat.id,
@@ -243,30 +223,6 @@ async def request_handler(client: Client, message: Message):
         await mute_user(client, user)
         await message.delete()
         raise ContinuePropagation
-
-    if message.via_bot is None:
-
-        request_lines = body.split("\n")
-        request_lines = [
-            line.strip()
-            for line in request_lines
-            if line.strip() != ''
-        ]
-
-        if len(request_lines) != 5 or (not has_link(message)):
-
-            await message.reply_text(
-                text=(f"{user.mention(user.first_name)}, "
-                   "Make sure your request is in correct format:\n\n"
-                   "<i>#request #audiobook (+ other needed tags)</i>\n"
-                   "<i>Title</i>\n"
-                   "<i>Author</i>\n"
-                   "<i>Publisher (or Self-published when publisher isn't specified)</i>\n"
-                   "<i>Link</i>\n\n"
-                   "- <b>Edit your message to add the missing details</b>\n"
-                   '- See the <a href="https://t.me/c/1559332818/6059">pinned message</a> for help regarding request generator bot\n'),
-                quote=True
-            )
 
     DB.register_request(user.id, is_english, message.message_id)
     await client.send_reaction(
