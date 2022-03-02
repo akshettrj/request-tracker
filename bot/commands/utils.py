@@ -49,7 +49,7 @@ async def pending_cmd(client: Client, message: Message):
     for indx,request in enumerate(pending_requests):
 
         pending_req_text += f'{indx+1}. {html_message_link(group_id, request["message_id"], f"Request {indx+1}")}, '
-        pending_req_text += f'<i>{format_time_diff(cur_time, request["req_time"])}</i> '
+        pending_req_text += f'<i>{format_time_diff(cur_time, request["req_time"])}</i> {"#English" if request["is_english"] else "#NonEnglish"} '
         pending_req_text += f'(<code>/delreq {request["message_id"]}</code>)\n'
 
     await message.reply_text(
