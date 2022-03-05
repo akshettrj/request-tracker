@@ -87,13 +87,13 @@ class CustomFilters:
     notdone_cmd_filter = (
         ~filters.edited
         & (_sudo_user_filter | _main_group_filter)
-        & filters.command("notdone", COMMAND_PREFIXES)
+        & filters.command("pending", COMMAND_PREFIXES)
     )
 
     requests_cmd_filter = (
         ~filters.edited
         & (_sudo_user_filter | _main_group_filter)
-        & filters.command("requests", COMMAND_PREFIXES)
+        & filters.command("userrequests", COMMAND_PREFIXES)
     )
 
     stats_cmd_filter = (
@@ -105,7 +105,7 @@ class CustomFilters:
     pending_cmd_filter = (
         ~filters.edited
         & (_sudo_user_filter | _main_group_filter)
-        & filters.command("pending", COMMAND_PREFIXES)
+        & filters.command("requests", COMMAND_PREFIXES)
     )
 
     lastfilled_cmd_filter = (

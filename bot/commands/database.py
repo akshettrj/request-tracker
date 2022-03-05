@@ -18,7 +18,7 @@ HELP_DATA += [["dropdb", "Drop the whole database ⚠️", ["SUDO", "OWNER"]]]
 HELP_DATA += [["dellastreq", "Delete the last request of a user. Reply to message or pass in User ID", ["SUDO", "ADMIN"]]]
 HELP_DATA += [["delreq", "Delete a request. Pass in the Message ID", ["SUDO", "ADMIN"]]]
 HELP_DATA += [["done", "Mark a request as completed. Reply to the request message", ["SUDO", "ADMIN"]]]
-HELP_DATA += [["notdone", "Mark a request as not completed. Reply to the request message", ["SUDO", "ADMIN"]]]
+HELP_DATA += [["pending", "Mark a request as not completed. Reply to the request message", ["SUDO", "ADMIN"]]]
 sort_help_data()
 
 

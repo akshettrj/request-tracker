@@ -19,7 +19,7 @@ from bot.helpers.utils import (
 
 HELP_DATA += [["leaderboard", "Get the current requests fulfillment leaderboard", ["SUDO", "ADMIN"]]]
 HELP_DATA += [["limits", "Get the current request limits configured in the bot", ["SUDO", "ADMIN"]]]
-HELP_DATA += [["requests", "Get the total number of requests made by a person. Pass in User ID or reply to a message", ["SUDO", "ADMIN"]]]
+HELP_DATA += [["userrequests", "Get the total number of requests made by a person. Pass in User ID or reply to a message", ["SUDO", "ADMIN"]]]
 HELP_DATA += [["stats", "Get the requests stats for the group", ["SUDO", "ADMIN"]]]
 sort_help_data()
 

@@ -14,7 +14,7 @@ from bot.helpers.utils import (
 )
 
 
-HELP_DATA += [["pending", "Get all the current pending requests", ["SUDO", "ADMIN"]]]
+HELP_DATA += [["requests", "Get all the current pending requests", ["SUDO", "ADMIN"]]]
 HELP_DATA += [["lastfilled", "Get the most recently fulfilled request", ["SUDO", "ADMIN"]]]
 HELP_DATA += [["schemas", "Get the current table schemas in the database", ["SUDO", "OWNER"]]]
 HELP_DATA += [["sqlquery", "Run a SQL query on the dataset. Pass in the query or reply to one", ["SUDO", "OWNER"]]]
