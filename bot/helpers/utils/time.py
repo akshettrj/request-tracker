@@ -2,6 +2,11 @@ from datetime import date, datetime, timedelta
 
 
 def check_time_gap_crossed(curr_time: datetime, old_time: datetime, gap):
+    '''
+    Checks if the time gap has been crossed or not
+
+    Returns True/False along with the appropriate time when the gap will be crossed
+    '''
 
     if gap['type'] == 'd':
         time_diff = curr_time.date() - old_time.date()
@@ -21,6 +26,8 @@ def check_time_gap_crossed(curr_time: datetime, old_time: datetime, gap):
         time_change = timedelta(seconds=gap['value'])
         appropriate_time = (old_time + time_change)
         return time_diff.seconds >= gap['value'], appropriate_time
+
+    return True, datetime.now()
 
 
 def format_date(d: date):

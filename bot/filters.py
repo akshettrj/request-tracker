@@ -93,7 +93,10 @@ class CustomFilters:
     requests_cmd_filter = (
         ~filters.edited
         & (_sudo_user_filter | _main_group_filter)
-        & filters.command("userrequests", COMMAND_PREFIXES)
+        & (
+            filters.command("me", COMMAND_PREFIXES) |
+            filters.command("userrequests", COMMAND_PREFIXES)
+        )
     )
 
     stats_cmd_filter = (

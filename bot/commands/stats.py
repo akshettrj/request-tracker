@@ -13,13 +13,13 @@ from bot.filters import CustomFilters
 from bot.helpers.utils import (
     is_admin, is_sudo_user, get_main_group_name,
     html_message_link, sort_help_data,
-    format_time_diff, format_date
+    format_time_diff, format_date, check_time_gap_crossed
 )
 
 
 HELP_DATA += [["leaderboard", "Get the current requests fulfillment leaderboard", ["SUDO", "ADMIN"]]]
 HELP_DATA += [["limits", "Get the current request limits configured in the bot", ["SUDO", "ADMIN"]]]
-HELP_DATA += [["userrequests", "Get the total number of requests made by a person. Pass in User ID or reply to a message", ["SUDO", "ADMIN"]]]
+HELP_DATA += [["me/userrequests", "Get the total number of requests made by a person and how long they need to request again", ["GROUP-MEMBERS"]]]
 HELP_DATA += [["stats", "Get the requests stats for the group", ["SUDO", "ADMIN"]]]
 sort_help_data()
 
@@ -53,30 +53,33 @@ async def requests_cmd(client: Client, message: Message):
     if user is None or body is None:
         raise ContinuePropagation
 
-    if (not await is_sudo_user(user)) and (not await is_admin(client, user)):
-        raise ContinuePropagation
+    user_is_admin = (not await is_sudo_user(user)) and (not await is_admin(client, user))
 
     target_user_id = -1
-    body_split = body.split("\n")[0].split()
 
-    if len(body_split) >= 2:
-        arg = body_split[1]
-        if arg.isnumeric():
-            target_user_id = int(arg)
+    if user_is_admin:
+        body_split = body.split("\n")[0].split()
 
-    replied_to = message.reply_to_message
-    if target_user_id == -1:
-        if replied_to is None or replied_to.from_user is None:
-            await message.reply_text(
-                text='<b>Usages:</b>\n' +
-                '1. <code>/requests <user_id></code>\n' +
-                '2. Reply <code>/requests</code> to a user\'s message',
-                quote=True
-            )
-            raise ContinuePropagation
-        else:
-            target_user_id = replied_to.from_user.id
+        if len(body_split) >= 2:
+            arg = body_split[1]
+            if arg.isnumeric():
+                target_user_id = int(arg)
 
+        replied_to = message.reply_to_message
+        if target_user_id == -1:
+            if replied_to is None or replied_to.from_user is None:
+                await message.reply_text(
+                    text='<b>Usages:</b>\n' +
+                    '1. <code>/requests <user_id></code>\n' +
+                    '2. Reply <code>/requests</code> to a user\'s message',
+                    quote=True
+                )
+                raise ContinuePropagation
+            else:
+                target_user_id = replied_to.from_user.id
+
+    else:
+        target_user_id = user.id
 
     user_id = DB.get_user(target_user_id)
 
@@ -111,10 +114,22 @@ async def requests_cmd(client: Client, message: Message):
         if last_req['message_id'] is None or last_req['req_time'] is None:
             raise ContinuePropagation
 
+        last_was_english = last_req['is_english']
+        base_time = last_req['req_time']
+
         stats_text += f'\nThe {html_message_link(group_id, last_req["message_id"], "last one")} was {format_time_diff(cur_time, last_req["req_time"])}'
 
         if last_req['fulfill_time'] is not None and last_req['fulfill_message_id'] is not None:
-            stats_text += f' and it was {html_message_link(group_id, last_req["fulfill_message_id"], "fulfilled")} {format_time_diff(cur_time, last_req["fulfill_time"])}'
+            stats_text += f' and it was {html_message_link(group_id, last_req["fulfill_message_id"], "fulfilled")} {format_time_diff(cur_time, last_req["fulfill_time"])}\n'
+            base_time = last_req['fulfill_time']
+
+        req_time = REQ_TIMES['eng'] if last_was_english else REQ_TIMES['non_eng']
+        crossed, appr_time = check_time_gap_crossed(cur_time, base_time, req_time)
+
+        if crossed:
+            stats_text += "\nThe user can request new audiobooks now :)"
+        else:
+            stats_text += f"\nThe user needs to wait {format_time_diff(None,None,appr_time-cur_time).replace(' ago', '')} for requesting new audiobooks"
 
     await message.reply_text(
         text=stats_text,
