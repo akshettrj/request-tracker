@@ -204,6 +204,12 @@ async def done_cmd(client: Client, message: Message):
         quote=True
     )
 
+    await client.send_reaction(
+        chat_id=message.chat.id,
+        message_id=replied_to.message_id,
+        emoji="🔥"
+    )
+
     raise ContinuePropagation
 
 
@@ -249,6 +255,12 @@ async def notdone_cmd(client: Client, message: Message):
     await message.reply_text(
         text=f"{html_message_link(group_id, replied_to.message_id, 'Request')} marked as pending\n",
         quote=True
+    )
+
+    await client.send_reaction(
+        chat_id=message.chat.id,
+        message_id=replied_to.message_id,
+        emoji="👍"
     )
 
     raise ContinuePropagation
