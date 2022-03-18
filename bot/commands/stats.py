@@ -53,7 +53,7 @@ async def requests_cmd(client: Client, message: Message):
     if user is None or body is None:
         raise ContinuePropagation
 
-    user_is_admin = (not await is_sudo_user(user)) and (not await is_admin(client, user))
+    user_is_admin = (await is_sudo_user(user)) or (await is_admin(client, user))
 
     target_user_id = -1
 
@@ -70,8 +70,8 @@ async def requests_cmd(client: Client, message: Message):
             if replied_to is None or replied_to.from_user is None:
                 await message.reply_text(
                     text='<b>Usages:</b>\n' +
-                    '1. <code>/requests <user_id></code>\n' +
-                    '2. Reply <code>/requests</code> to a user\'s message',
+                    '1. <code>/userrequests <user_id></code>\n' +
+                    '2. Reply <code>/userrequests</code> to a user\'s message',
                     quote=True
                 )
                 raise ContinuePropagation
