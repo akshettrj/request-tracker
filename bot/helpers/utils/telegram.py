@@ -1,4 +1,4 @@
-from time import time
+from time import time, sleep
 from pyrogram.client import Client
 from pyrogram.types.messages_and_media.message import Message
 from pyrogram.types.user_and_chats.chat_member import ChatMember
@@ -78,3 +78,11 @@ def has_link(message: Message):
         return_value = True
 
     return return_value
+
+def time_delete_message(client: Client, group_id: int, message_id: int):
+
+    sleep(5*60)
+    _ = client.delete_messages(
+        chat_id=group_id,
+        message_ids=message_id,
+    )

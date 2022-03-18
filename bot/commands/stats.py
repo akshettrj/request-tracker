@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import os
 import matplotlib.pyplot as plt
+import threading
 
 from pyrogram import ContinuePropagation
 from pyrogram.client import Client
@@ -11,7 +12,7 @@ from bot import ( DB, GROUP_ID, NAME_CACHE, REQ_TIMES, HELP_DATA,
 from bot.client import app
 from bot.filters import CustomFilters
 from bot.helpers.utils import (
-    is_admin, is_sudo_user, get_main_group_name,
+    is_admin, is_sudo_user, get_main_group_name, time_delete_message,
     html_message_link, sort_help_data,
     format_time_diff, format_date, check_time_gap_crossed
 )
@@ -68,12 +69,17 @@ async def requests_cmd(client: Client, message: Message):
         replied_to = message.reply_to_message
         if target_user_id == -1:
             if replied_to is None or replied_to.from_user is None:
-                await message.reply_text(
+                sent_message = await message.reply_text(
                     text='<b>Usages:</b>\n' +
                     '1. <code>/userrequests <user_id></code>\n' +
                     '2. Reply <code>/userrequests</code> to a user\'s message',
                     quote=True
                 )
+                thread = threading.Thread(
+                    target=time_delete_message,
+                    args=(client,sent_message.chat.id,sent_message.message_id)
+                )
+                thread.start()
                 raise ContinuePropagation
             else:
                 target_user_id = replied_to.from_user.id
@@ -84,10 +90,15 @@ async def requests_cmd(client: Client, message: Message):
     user_id = DB.get_user(target_user_id)
 
     if user_id is None:
-        await message.reply_text(
+        sent_message = await message.reply_text(
             text='There are no records for the user yet.',
             quote=True
         )
+        thread = threading.Thread(
+            target=time_delete_message,
+            args=(client,sent_message.chat.id,sent_message.message_id)
+        )
+        thread.start()
         return
 
     ( english_fulfilled, non_english_fulfilled,
@@ -131,10 +142,15 @@ async def requests_cmd(client: Client, message: Message):
         else:
             stats_text += f"\nThe user needs to wait {format_time_diff(None,None,appr_time-cur_time).replace(' ago', '')} for requesting new audiobooks"
 
-    await message.reply_text(
+    sent_message = await message.reply_text(
         text=stats_text,
         quote=True
     )
+    thread = threading.Thread(
+        target=time_delete_message,
+        args=(client,sent_message.chat.id,sent_message.message_id)
+    )
+    thread.start()
 
     raise ContinuePropagation
 
@@ -163,10 +179,15 @@ async def stats_cmd(client: Client, message: Message):
     curr_date = datetime.now().date()
     oldest_req_time = DB.get_oldest_request_time()
     if oldest_req_time is None or not oldest_req_time:
-        await message.reply_text(
+        sent_message = await message.reply_text(
             text="There are no requests in the database currently!",
             quote=True
         )
+        thread = threading.Thread(
+            target=time_delete_message,
+            args=(client,sent_message.chat.id,sent_message.message_id)
+        )
+        thread.start()
         raise ContinuePropagation
 
     start_time = oldest_req_time[0]
@@ -234,11 +255,16 @@ async def stats_cmd(client: Client, message: Message):
     plt.legend()
     plt.savefig("./weekly_stats.png")
 
-    await message.reply_document(
+    sent_message = await message.reply_document(
         document="./weekly_stats.png",
         caption=stats_text,
         quote=True
     )
+    thread = threading.Thread(
+        target=time_delete_message,
+        args=(client,sent_message.chat.id,sent_message.message_id)
+    )
+    thread.start()
 
     os.remove("./weekly_stats.png")
 
@@ -276,7 +302,12 @@ async def leaderboard_cmd(client: Client, message: Message):
 
         leaderboard_text += f'{pos+1}) <a href="tg://user?id={user_id}">{name}</a> ({fulfill_count} filled)\n'
 
-    await message.reply_text(
+    sent_message = await message.reply_text(
         text=leaderboard_text,
         quote=True
     )
+    thread = threading.Thread(
+        target=time_delete_message,
+        args=(client,sent_message.chat.id,sent_message.message_id)
+    )
+    thread.start()
