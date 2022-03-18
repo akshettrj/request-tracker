@@ -131,16 +131,16 @@ async def requests_cmd(client: Client, message: Message):
         stats_text += f'\nThe {html_message_link(group_id, last_req["message_id"], "last one")} was {format_time_diff(cur_time, last_req["req_time"])}'
 
         if last_req['fulfill_time'] is not None and last_req['fulfill_message_id'] is not None:
-            stats_text += f' and it was {html_message_link(group_id, last_req["fulfill_message_id"], "fulfilled")} {format_time_diff(cur_time, last_req["fulfill_time"])}\n'
+            stats_text += f' and it was {html_message_link(group_id, last_req["fulfill_message_id"], "fulfilled")} {format_time_diff(cur_time, last_req["fulfill_time"])}'
             base_time = last_req['fulfill_time']
 
         req_time = REQ_TIMES['eng'] if last_was_english else REQ_TIMES['non_eng']
         crossed, appr_time = check_time_gap_crossed(cur_time, base_time, req_time)
 
         if crossed:
-            stats_text += "\nThe user can request new audiobooks now :)"
+            stats_text += "\n\nThe user can request new audiobook now :)"
         else:
-            stats_text += f"\nThe user needs to wait {format_time_diff(None,None,appr_time-cur_time).replace(' ago', '')} for requesting new audiobooks"
+            stats_text += f"\n\nThe user needs to wait {format_time_diff(None,None,appr_time-cur_time).replace(' ago', '')} for requesting new audiobook"
 
     sent_message = await message.reply_text(
         text=stats_text,
