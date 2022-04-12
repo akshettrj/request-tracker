@@ -68,7 +68,7 @@ async def dellastreq_cmd(client: Client, message: Message):
                 text='<b>Usages:</b>\n' +
                 '1. <code>/dellastreq <user_id></code>\n' +
                 '2. Reply <code>/dellastreq</code> to a user\'s message',
-                quote=True
+                quote=False
             )
             raise ContinuePropagation
         else:
@@ -80,7 +80,7 @@ async def dellastreq_cmd(client: Client, message: Message):
     except Exception as _:
         await message.reply_text(
             text="Not a valid id",
-            quote=True
+            quote=False
         )
         raise ContinuePropagation
 
@@ -91,7 +91,7 @@ async def dellastreq_cmd(client: Client, message: Message):
     if user_id is None:
         await message.reply_text(
             text='There are no records for the user yet.',
-            quote=True
+            quote=False
         )
         raise ContinuePropagation
 
@@ -100,7 +100,7 @@ async def dellastreq_cmd(client: Client, message: Message):
     if last_req['user_id'] is None or last_req['message_id'] is None or last_req['req_time'] is None:
         await message.reply_text(
             text='There are no records for the user yet.',
-            quote=True
+            quote=False
         )
         raise ContinuePropagation
 
@@ -113,7 +113,7 @@ async def dellastreq_cmd(client: Client, message: Message):
         text=f'{html_message_link(group_id, last_req["message_id"], "Last request")} of ' +
             f'{target_user.mention(target_user.first_name)} from ' +
             f'{format_time_diff(cur_time, last_req["req_time"])} has been deleted',
-        quote=True
+        quote=False
     )
 
     raise ContinuePropagation
@@ -144,7 +144,7 @@ async def delreq_cmd(client: Client, message: Message):
                 text='<b>Usages:</b>\n' +
                 '1. <code>/delreq <message_id></code>\n' +
                 '2. Reply <code>/delreq</code> to a user\'s message',
-                quote=True
+                quote=False
             )
             raise ContinuePropagation
         else:
@@ -154,7 +154,7 @@ async def delreq_cmd(client: Client, message: Message):
 
     await message.reply_text(
         text="The request has been deleted from records",
-        quote=True
+        quote=False
     )
 
     raise ContinuePropagation
@@ -174,7 +174,7 @@ async def done_cmd(client: Client, message: Message):
     if (replied_to is None) or (not is_a_request(replied_to)):
         await message.reply(
             text="Please reply to a request message",
-            quote=True
+            quote=False
         )
         raise ContinuePropagation
 
@@ -182,7 +182,7 @@ async def done_cmd(client: Client, message: Message):
     if target_user is None:
         await message.reply(
             text="Couldn't find any user in the replied message :panick:",
-            quote=True
+            quote=False
         )
         raise ContinuePropagation
 
@@ -201,7 +201,7 @@ async def done_cmd(client: Client, message: Message):
     group_id = int(str(GROUP_ID)[4:])
     await message.reply_text(
         text=f"{html_message_link(group_id, replied_to.message_id, 'Request')} marked as fulfilled\n",
-        quote=True
+        quote=False
     )
 
     await client.send_reaction(
@@ -227,7 +227,7 @@ async def notdone_cmd(client: Client, message: Message):
     if (replied_to is None) or (not is_a_request(replied_to)):
         await message.reply(
             text="Please reply to a request message",
-            quote=True
+            quote=False
         )
         raise ContinuePropagation
 
@@ -235,7 +235,7 @@ async def notdone_cmd(client: Client, message: Message):
     if target_user is None:
         await message.reply(
             text="Couldn't find any user in the replied message :panick:",
-            quote=True
+            quote=False
         )
         raise ContinuePropagation
 
@@ -254,7 +254,7 @@ async def notdone_cmd(client: Client, message: Message):
     group_id = int(str(GROUP_ID)[4:])
     await message.reply_text(
         text=f"{html_message_link(group_id, replied_to.message_id, 'Request')} marked as pending\n",
-        quote=True
+        quote=False
     )
 
     await client.send_reaction(
