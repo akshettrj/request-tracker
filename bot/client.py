@@ -12,14 +12,15 @@ from bot.helpers.utils import is_admin, is_sudo_user
 app = None
 if SESSION_STRING != '':
     app = Client(
-                SESSION_STRING,
+                "request_tracker",
+                session_string=SESSION_STRING,
                 api_hash=API_HASH,
                 api_id=API_ID,
             )
     logger.info("Logging in using SESSION_STRING")
 else:
     app = Client(
-                session_name='req_delete_bot',
+                'req_delete_bot',
                 api_hash=API_HASH,
                 api_id=API_ID,
                 bot_token=BOT_TOKEN,
